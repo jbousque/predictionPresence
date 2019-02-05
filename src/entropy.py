@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.spatial import ConvexHull
 from collections import defaultdict
-from matplotlib import pyplot
-from sklearn.preprocessing import normalize
 import scipy
 
 def coordArray(coordFile):
