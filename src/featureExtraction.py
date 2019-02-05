@@ -16,8 +16,12 @@ from sklearn.metrics import confusion_matrix
 from sklearn.svm import SVC
 import matplotlib.pyplot as plt
 
+#gregCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
+#profBCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/Data"
+
 gregCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
 profBCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/Data"
+
 
 def filePaths():
     #The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
@@ -602,8 +606,8 @@ def main():
     splitratios = [0.15, 0.70, 0.15]
 
 
-    #computeFeatures(pathsList, splitratios)    
-    #prepareMatrix()
+    computeFeatures(pathsList, splitratios)
+    prepareMatrix()
     
     randomForest("/home/sameer/Projects/ACORFORMED/Data/mlMat.xlsx", "presence")
 
