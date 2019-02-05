@@ -3,8 +3,9 @@ import os
 import subprocess
 import sys
 from pydub import AudioSegment
+import config
 
-pyAudioAnalysisPath = "/home/sameer/Downloads/pyAudioAnalysis-master"
+pyAudioAnalysisPath = config.PYAA_SRC_PATH
 sys.path.append(pyAudioAnalysisPath)
 import convertToWav
 
@@ -23,9 +24,19 @@ def trimEnd(origFile, threshold, chunk_size):		#chunk_size is in milliseconds
 
     return 	s 			#returns an audio segment
 
-def splitInThree(originalAudio, splitUp):		#splitUp would be a list of three numbers telling where to split the original audio file
-
-    #seg = trimEnd(originalAudio, -12, 1000)     #the cutoff threshold of-12 is customized for the beep at the end of the videos, run this only if IPUs are to be calculated for the interaction audio file, not needed for the mic input audio file
+def splitInThree(originalAudio, splitUp, removeBip=False):		#splitUp would be a list of three numbers telling where to split the original audio file
+    """
+    Splits audio in 3 segments with relative lengths given by splitUp array.
+    :param originalAudio: 
+    :param splitUp: 
+    :param removeBip: Trims 12 ms from end of audio (to remove bip, if necessary)
+    :return: Nothing, creates 3 files begin.wav, middle.wav, end.wav in IPUtemp directory.
+    """
+    # the cutoff threshold of-12 is customized for the beep at the end of the videos,
+    # run this only if IPUs are to be calculated for the interaction audio file, not needed
+    # for the mic input audio file
+    if removeBip:
+        seg = trimEnd(originalAudio, -12, 1000)
     segment = AudioSegment.from_file(originalAudio)
     duration = segment.duration_seconds
     duration_ms = duration * 1000

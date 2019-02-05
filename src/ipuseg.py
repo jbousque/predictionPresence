@@ -4,8 +4,9 @@ import pandas as pd
 import numpy as np
 from pydub import AudioSegment
 from wavSplitter import splitInThree
+import config
 
-sp_globPath = "/home/sameer/Downloads/sppas-1.8.6/sppas/src"
+sp_globPath = config.SPPAS_SRC_PATH
 sys.path.append(sp_globPath)
 from annotations.IPUs.ipusseg import sppasIPUs
 
