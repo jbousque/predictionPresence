@@ -18,6 +18,8 @@ def splitArray(coordArray, splitRatios):
     midArr = coordArray[splitIndex_1: splitIndex_2, :]
     endArr = coordArray[splitIndex_2:, :]
 
+
+
     return np.array([beginArr, midArr, endArr])
 
 
@@ -149,9 +151,21 @@ def videoEntropyMatrix(fileName, splitRatios):
     coordArr = coordArray(fileName)
     splitArr = splitArray(coordArr, splitRatios)
 
-    completeEntropyMatrix = segmentEntropyMatrix(splitArr[0])
-    completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[1])])
-    completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[2])])
+    completeEntropyMatrix = np.array([])
+
+    if splitArr[0].size > 0:
+        completeEntropyMatrix = segmentEntropyMatrix(splitArr[0])
+
+    if splitArr[1].size > 0:
+        if completeEntropyMatrix.size > 0:
+            completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[1])])
+        else:
+            completeEntropyMatrix = segmentEntropyMatrix(splitArr[1])
+    if splitArr[2].size > 0:
+        if completeEntropyMatrix.size > 0:
+            completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[2])])
+        else:
+            completeEntropyMatrix = segmentEntropyMatrix(splitArr[2])
 
     print completeEntropyMatrix
     print completeEntropyMatrix.shape
