@@ -5,10 +5,11 @@ import subprocess
 from pydub import AudioSegment
 from collections import defaultdict
 import numpy as np
+import config
 
 
-sp_globPath = "/home/sameer/Downloads/sppas-1.8.6/sppas/src"
-greg_path = "/home/sameer/Downloads/Gregoire SPPAS Scripts/"
+sp_globPath = config.SPPAS_SRC_PATH
+greg_path = config.SPPAS_GREG_SRC_PATH
 
 
 sys.path.append(sp_globPath)
@@ -67,7 +68,7 @@ def POStaggedFile(alignFileName):
 	#Inputs 	: eaf transcription aligned with audio
 	#Output 	: eaf transcription with a tier for part-of-speech labels
 
-	print subprocess.check_output(["/home/sameer/MarsaTag/MarsaTag-UI.sh", '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-no-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName])
+	print subprocess.check_output([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-no-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName])
 
 	fileName, fileExt = os.path.splitext(alignFileName)
 	return os.path.join(fileName + "-marsatag.eaf")
@@ -76,7 +77,7 @@ def PunctuatedFile(alignFileName):
 	#Inputs 	: eaf transcription aligned with audio
 	#Output 	: eaf transcription with a tier for part-of-speech and punctuation labels
 
-	print subprocess.check_output(["/home/sameer/MarsaTag/MarsaTag-UI.sh", '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-with-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatagPunc.eaf", alignFileName])
+	print subprocess.check_output([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-with-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatagPunc.eaf", alignFileName])
 
 	fileName, fileExt = os.path.splitext(alignFileName)
 	return os.path.join(fileName + "-marsatagPunc.eaf")		
