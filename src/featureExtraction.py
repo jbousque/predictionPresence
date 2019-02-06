@@ -15,13 +15,12 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
 from sklearn.svm import SVC
 import matplotlib.pyplot as plt
+import config
+from datetime import datetime
 
-#gregCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
-#profBCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/Data"
-
-gregCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
-profBCorpusPath = "/home/sameer/Projects/ACORFORMED/Data/Data"
-
+gregCorpusPath = config.PREV_CORPUS_PATH # "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
+profBCorpusPath = config.CORPUS_PATH # "/home/sameer/Projects/ACORFORMED/Data/Data"
+curdate = datetime.now().strftime("%Y-%m%d_%H-%M-%S")
 
 def filePaths():
     #The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
@@ -59,8 +58,15 @@ def filePaths():
     return outerArr
 
 def computePOStags(pathsList, splitratios):
-    crashlist = ["/home/sameer/Projects/ACORFORMED/Data/corpus2017/N1A/Casque/data/asr-trans/N1A-02-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N2B/PC/data/asr-trans/N2B-02-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/E6F/Cave/data/asr-trans/E6F-03-Cave-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N15C/Casque/data/asr-trans/N15C-01-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N3C/Casque/data/asr-trans/N3C-01-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/E2B/Cave/data/asr-trans/E2B-02-Cave-micro.E2B-latin1.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/PC/data/asr-trans/N6F-05-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/PC/data/asr-trans/N6F-01-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/Casque/data/asr-trans/N6F-04-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/Casque/data/asr-trans/N6F-02-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N21C/PC/data/asr-trans/N21C-03-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N22D/PC/data/asr-trans/N22D-02-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N22D/PC/data/asr-trans/N22D-02-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N22D/Cave/data/asr-trans/N22D-03-Cave-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N4D/Casque/data/asr-trans/N4D-01-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/E7A/Casque/data/asr-trans/E7A-02-Casque-micro.E1-5.xra"]
-    for paths in pathsList:
+    crashlist = ["N1A-02-Casque-micro.E1-5.xra", "N2B-02-PC-micro.E1-5.xra", "E6F-03-Cave-micro.E1-5.xra",
+                 "N15C-01-Casque-micro.E1-5.xra", "N3C-01-Casque-micro.E1-5.xra", "E2B-02-Cave-micro.E2B-latin1.xra",
+                 "N6F-05-PC-micro.E1-5.xra", "N6F-01-PC-micro.E1-5.xra", "N6F-04-Casque-micro.E1-5.xra",
+                 "N6F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
+                 "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N4D-01-Casque-micro.E1-5.xra",
+                 "E7A-02-Casque-micro.E1-5.xra"]
+    filter_func = lambda s: not any(x in s for x in crashlist)
+    matching_paths = filter(filter_func, pathsList)
+    for paths in matching_paths:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
             if(fileext == ".xra" and path not in crashlist):# and path not in throughList):
@@ -78,9 +84,15 @@ def computePOStags(pathsList, splitratios):
 
 def computeSentenceLengths(pathsList, splitratios):
     #code cleanup: computeSentenceLengths and computePOStags do redundant work. Could be improved
-    crashlist = ["/home/sameer/Projects/ACORFORMED/Data/corpus2017/N1A/Casque/data/asr-trans/N1A-02-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N2B/PC/data/asr-trans/N2B-02-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/E6F/Cave/data/asr-trans/E6F-03-Cave-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N15C/Casque/data/asr-trans/N15C-01-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N3C/Casque/data/asr-trans/N3C-01-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/E2B/Cave/data/asr-trans/E2B-02-Cave-micro.E2B-latin1.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/PC/data/asr-trans/N6F-05-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/PC/data/asr-trans/N6F-01-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/Casque/data/asr-trans/N6F-04-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N6F/Casque/data/asr-trans/N6F-02-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N21C/PC/data/asr-trans/N21C-03-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N22D/PC/data/asr-trans/N22D-02-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N22D/PC/data/asr-trans/N22D-02-PC-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N22D/Cave/data/asr-trans/N22D-03-Cave-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/N4D/Casque/data/asr-trans/N4D-01-Casque-micro.E1-5.xra", "/home/sameer/Projects/ACORFORMED/Data/corpus2017/E7A/Casque/data/asr-trans/E7A-02-Casque-micro.E1-5.xra"]
-
-    for paths in pathsList:
+    crashlist = ["N1A-02-Casque-micro.E1-5.xra", "N2B-02-PC-micro.E1-5.xra", "E6F-03-Cave-micro.E1-5.xra",
+                 "N15C-01-Casque-micro.E1-5.xra", "N3C-01-Casque-micro.E1-5.xra", "E2B-02-Cave-micro.E2B-latin1.xra",
+                 "N6F-05-PC-micro.E1-5.xra", "N6F-01-PC-micro.E1-5.xra", "N6F-04-Casque-micro.E1-5.xra",
+                 "N6F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
+                 "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N4D-01-Casque-micro.E1-5.xra",
+                 "E7A-02-Casque-micro.E1-5.xra"]
+    filter_func = lambda s: not any(x in s for x in crashlist)
+    matching_paths = filter(filter_func, pathsList)
+    for paths in matching_paths:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
             if(fileext == ".xra" and path not in crashlist):# and path not in throughList):
@@ -88,7 +100,7 @@ def computeSentenceLengths(pathsList, splitratios):
                     _, extWav = os.path.splitext(wavPath)
                     if(extWav == ".wav"):
                         #print path, wavPath
-                        sentenceLengthArray = avgSentenceLength(path, wavPath, splitratios, "/home/sameer/Downloads/sppas-1.8.6", "1.8.6")
+                        sentenceLengthArray = avgSentenceLength(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
                         envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
                         candidate = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))))
                         dest = os.path.join(profBCorpusPath, candidate, envType, "Features", "slength.txt")
@@ -109,8 +121,10 @@ def computeEntropies(pathsList, splitratios):
                 np.savetxt(dest, entArr)
 
 def computeIPUlengths(pathsList, splitratios):
-    crashlist = ["/home/sameer/Projects/ACORFORMED/Data/corpus2017/N21C/PC/data/N21C-03-PC-micro.wav"]
-    for paths in pathsList:
+    crashlist = ["N21C-03-PC-micro.wav"]
+    filter_func = lambda s: not any(x in s for x in crashlist)
+    matching_paths = filter(filter_func, pathsList)
+    for paths in matching_paths:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
             if(fileext == ".wav" and path not in crashlist):
@@ -337,7 +351,7 @@ def prepareMatrix():
 
     pdDump = pd.DataFrame(mat)
     #dumpPath = "/home/sameer/Projects/ACORFORMED/Data/matrix.xlsx"
-    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), "matrix.xlsx")
+    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), "matrix" + curdate + ".xlsx")
     pdDump.columns = ['Head_Entropy_Start', 'Head_Entropy_Mid', 'Head_Entropy_End', 'LeftWrist_Entropy_Start', 'LeftWrist_Entropy_Mid', 'LeftWrist_Entropy_End', 'RightWrist_Entropy_Start', 'RightWrist_Entropy_Mid', 'RightWrist_Entropy_End', 'LeftElbow_Entropy_Start', 'LeftElbow_Entropy_Mid', 'LeftElbow_Entropy_End', 'RightElbow_Entropy_Start', 'RightElbow_Entropy_Mid', 'RightElbow_Entropy_End', 'Freq_Adjective_Begin', 'Freq_Adjective_Mid', 'Freq_Adjective_End', 'Freq_Adverb_Begin', 'Freq_Adverb_Mid', 'Freq_Adverb_End','Freq_Auxiliary_Begin', 'Freq_Auxiliary_Mid', 'Freq_Auxiliary_End', 'Freq_Conjunction_Begin', 'Freq_Conjunction_Mid', 'Freq_Conjunction_End', 'Freq_Determiner_Begin', 'Freq_Determiner_Mid', 'Freq_Determiner_End', 'Freq_Noun_Begin', 'Freq_Noun_Mid', 'Freq_Noun_End', 'Freq_Preposition_Begin', 'Freq_Preposition_Mid', 'Freq_Preposition_End', 'Freq_Pronoun_Begin', 'Freq_Pronoun_Mid', 'Freq_Pronoun_End', 'Freq_Verb_Begin', 'Freq_Verb_Mid', 'Freq_Verb_End', 'Avg_SentenceLength_Begin', 'Avg_SentenceLength_Mid', 'Avg_SentenceLength_End', 'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Ratio1_Begin', 'Ratio1_Mid', 'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score', 'Presence Class', 'Co-presence Score', 'Co-presence Class']
 
     pdDump.insert(0, 'Candidate', candidateVec)
@@ -391,7 +405,7 @@ def randomForest(dataFile, modelTarget):
     maxClassSize = max(samples_split[0].shape[0], samples_split[1].shape[0], samples_split[2].shape[0])
 
     upsampled = []
-
+    # todo upsample with SMOTE algorithm ? https://imbalanced-learn.readthedocs.io/en/stable/generated/imblearn.over_sampling.SMOTE.html
     for samples in samples_split:
         if(samples.shape[0] == maxClassSize):
             upsampled.append(samples)
@@ -436,7 +450,7 @@ def randomForest(dataFile, modelTarget):
 
 
     #dumpPath = "/home/sameer/Projects/ACORFORMED/Data/stats.xlsx"
-    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), "stats.xlsx")
+    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), "stats-"+curdate+".xlsx")
     print "\n"
     descIndices = np.argsort(importanceVec)
     
@@ -513,7 +527,7 @@ def presenceModels(dataFile):
     importanceVec = np.sum(importanceArr, axis = 0)/1000
 
 
-    dumpPath = "/home/sameer/Projects/ACORFORMED/Data/statsPres.xlsx"
+    dumpPath = "/home/sameer/Projects/ACORFORMED/Data/statsPres.xlsx" # todo path
     print "\n"
     descIndices = np.argsort(importanceVec)
     
@@ -579,7 +593,7 @@ def copresenceModels(dataFile):
     importanceVec = np.sum(importanceArr, axis = 0)/1000
 
 
-    dumpPath = "/home/sameer/Projects/ACORFORMED/Data/statsPres.xlsx"
+    dumpPath = "/home/sameer/Projects/ACORFORMED/Data/statsPres.xlsx" # todo path
     print "\n"
     descIndices = np.argsort(importanceVec)
     
@@ -609,7 +623,7 @@ def main():
     computeFeatures(pathsList, splitratios)
     prepareMatrix()
     
-    randomForest("/home/sameer/Projects/ACORFORMED/Data/mlMat.xlsx", "presence")
+    randomForest("/home/sameer/Projects/ACORFORMED/Data/mlMat.xlsx", "presence") # todo path
 
 if(__name__ == "__main__"):
     main()
