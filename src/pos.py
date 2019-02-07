@@ -33,6 +33,7 @@ def alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver):
 	"""
 
 	fileName, fileExt = os.path.splitext(transcriptionFile)
+	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(greg_path, "sppas_afterClosedCap.py"), transcriptionFile, "-D", sppaspath, "-V", sppasver]))
 	print subprocess.check_output(["python", os.path.join(greg_path, "sppas_afterClosedCap.py"), transcriptionFile, "-D", sppaspath, "-V", sppasver])
 	elanFile = os.path.join(fileName + ".eaf")		#ELAN file which created by the above call
 
@@ -54,21 +55,26 @@ def alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver):
 	alignFileName = wavFileName + "-palign.eaf"
 
 	#Subprocess call to create tokenized transcription file.
-	print subprocess.check_output([os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName])		
-	
-	#Subprocess call to create phonetized transcription file.	
-	print subprocess.check_output([os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName])		
+	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName]))
+	print subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName])
 
+	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName]))
+	#Subprocess call to create phonetized transcription file.	
+	print subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName])
+
+	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")]))
 	#Subprocess call to create transcription file aligned with audio.
-	print subprocess.check_output([os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")])		
+	print subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")])
 
 	return alignFileName
 
 def POStaggedFile(alignFileName):
 	#Inputs 	: eaf transcription aligned with audio
 	#Output 	: eaf transcription with a tier for part-of-speech labels
+	print("DEBUG ", subprocess.list2cmdline([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-no-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName]))
+	print subprocess.check_output([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName])
+    # todo put back "lpl-oral-no-punct" instead of "lpl-oral"
 
-	print subprocess.check_output([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-no-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName])
 
 	fileName, fileExt = os.path.splitext(alignFileName)
 	return os.path.join(fileName + "-marsatag.eaf")
@@ -77,7 +83,8 @@ def PunctuatedFile(alignFileName):
 	#Inputs 	: eaf transcription aligned with audio
 	#Output 	: eaf transcription with a tier for part-of-speech and punctuation labels
 
-	print subprocess.check_output([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral-with-punct", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatagPunc.eaf", alignFileName])
+	print subprocess.check_output([config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatagPunc.eaf", alignFileName])
+    # todo put back "lpl-oral-with-punct" instead of "lpl-oral"
 
 	fileName, fileExt = os.path.splitext(alignFileName)
 	return os.path.join(fileName + "-marsatagPunc.eaf")		
