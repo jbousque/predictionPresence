@@ -17,6 +17,9 @@ from sklearn.svm import SVC
 import matplotlib.pyplot as plt
 import config
 import argparse
+import logging
+
+logger = logging.getLogger(__name__)
 
 gregCorpusPath = config.PREV_CORPUS_PATH # "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
 profBCorpusPath = config.CORPUS_PATH # "/home/sameer/Projects/ACORFORMED/Data/Data"
@@ -380,22 +383,28 @@ def graphTupleList(l):
     plt.show()
 
 
-def randomForest(dataFile, modelTarget):
-    print("randomForest(dataFile={df}, modelTarget={mt})".format(df=dataFile, mt=modelTarget))
+def randomForest_gridsearch(dataFile, modelTarget, upsample=False):
+    logger.info("randomForest_gridsearch(dataFile={df}, modelTarget={mt})".format(df=dataFile, mt=modelTarget))
+
+    from sklearn.model_selection import train_test_split
 
     samples = pd.read_excel(dataFile)
+    samples = samples.rename(index=str,
+                             columns={"Presence Class": "PresenceClass", "Co-presence Class": "CopresenceClass"})
 
-    names = ("Expert", "Head_Entropy_Start", "Head_Entropy_Mid", "Head_Entropy_End", "Avg_HandEntropy_Begin", "Avg_HandEntropy_Mid", "Avg_HandEntropy_End", "Avg_SentenceLength_Begin", "Avg_SentenceLength_Mid", "Avg_SentenceLength_End", "Avg_IPUlen_Begin", "Avg_IPUlen_Middle", "Avg_IPUlen_End", "Ratio1_Begin", "Ratio1_Mid","Ratio1_End", "Ratio2_Begin", "Ratio2_Mid", "Ratio2_End", "Duration")
+    names = ("Expert", "Head_Entropy_Start", "Head_Entropy_Mid", "Head_Entropy_End", "Avg_HandEntropy_Begin",
+             "Avg_HandEntropy_Mid", "Avg_HandEntropy_End", "Avg_SentenceLength_Begin", "Avg_SentenceLength_Mid",
+             "Avg_SentenceLength_End", "Avg_IPUlen_Begin", "Avg_IPUlen_Middle", "Avg_IPUlen_End", "Ratio1_Begin",
+             "Ratio1_Mid","Ratio1_End", "Ratio2_Begin", "Ratio2_Mid", "Ratio2_End", "Duration")
 
-    samples = samples[list(names)]
 
     samples_split = []
-    if(modelTarget == "presence"):
+    if (modelTarget == "presence"):
         samples_split.append(samples[samples.PresenceClass == 1])
         samples_split.append(samples[samples.PresenceClass == 2])
         samples_split.append(samples[samples.PresenceClass == 3])
 
-    elif(modelTarget == "copresence"):
+    elif (modelTarget == "copresence"):
         samples_split.append(samples[samples.CopresenceClass == 1])
         samples_split.append(samples[samples.CopresenceClass == 2])
         samples_split.append(samples[samples.CopresenceClass == 3])
@@ -404,70 +413,189 @@ def randomForest(dataFile, modelTarget):
 
     maxClassSize = max(samples_split[0].shape[0], samples_split[1].shape[0], samples_split[2].shape[0])
 
-    upsampled = []
-    # todo upsample with SMOTE algorithm ? https://imbalanced-learn.readthedocs.io/en/stable/generated/imblearn.over_sampling.SMOTE.html
-    for samples in samples_split:
-        if(samples.shape[0] == maxClassSize):
-            upsampled.append(samples)
+    if upsample:
+        upsampled = []
+        # todo upsample with SMOTE algorithm ? https://imbalanced-learn.readthedocs.io/en/stable/generated/imblearn.over_sampling.SMOTE.html
+        for idx, samples in enumerate(samples_split):
+            if (samples.shape[0] == maxClassSize):
+                upsampled.append(samples)
+            else:
+                print("resample: adding " + str(maxClassSize-samples.shape[0]) + " samples to class " + str(idx+1) + " to reach " + str(maxClassSize) )
+                upsampled.append(resample(samples, replace=True, n_samples=maxClassSize, random_state=None))
+
+        balanced_set = pd.concat(upsampled)
+        X = np.nan_to_num(balanced_set.as_matrix(names))
+
+        if (modelTarget == "presence"):
+            y = np.array(balanced_set["PresenceClass"].tolist())
+
         else:
-            upsampled.append(resample(samples, replace=True, n_samples=maxClassSize, random_state=None))
-
-    balanced_set = pd.concat(upsampled)
-
-    forest = RandomForestClassifier()
-    sv = SVC()
-    
-    X = np.nan_to_num(balanced_set.as_matrix(names))
-
-    if(modelTarget == "presence"):
-        y = np.array(balanced_set["PresenceClass"].tolist())
+            y = np.array(balanced_set["CopresenceClass"].tolist())
 
     else:
-        y = np.array(balanced_set["CopresenceClass"].tolist())
+
+        X = np.nan_to_num(samples[list(names)])
+        if modelTarget == "presence":
+            y = samples.PresenceClass
+        else:
+            y = samples.CopresenceClass
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    print("X_train ", X_train.shape, "X_test", X_test.shape, "y_train", y_train.shape, "y_test", y_test.shape)
+
+    forest = RandomForestClassifier()
 
     #print X.shape
     print modelTarget, "random forest"
-    print "f1_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "f1_macro"))
-    print "precision_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "precision_macro"))
-    print "recall_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "recall_macro"))
+    from sklearn.model_selection import GridSearchCV # todo move to beginning with other imports
 
-    print "\n", modelTarget, "SVM"
-    print "f1_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "f1_macro"))
-    print "precision_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "precision_macro"))
-    print "recall_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "recall_macro"))
+    n_estimators = np.concatenate((np.arange(1,10), np.arange(10,100,10)))
+    class_weights = [None, 'balanced', 'balanced_subsample']
+    folds = np.concatenate((np.arange(1,10), np.arange(10,len(X),10)))
+    param_grid = dict(n_estimators=n_estimators, class_weight=class_weights)
+    grid = GridSearchCV(estimator=forest, param_grid=param_grid,
+                        scoring=['f1_macro', 'precision_macro', 'recall_macro'],
+                        refit='precision_macro',
+                        cv=20,
+                        verbose=10)
+
+    grid = grid.fit(X_train, y_train)
+
+    print("TEST Score : ", grid.score(X_test, y_test))
+
+    results = grid.cv_results_
+    #print("best params ", grid.best_params_)
+    #print("best score ", grid.best_score_)
+
+    return grid
+
+    #print "f1_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "f1_macro"))
+    #print "precision_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "precision_macro"))
+    #print "recall_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "recall_macro"))
+
+    #print "\n", modelTarget, "SVM"
+    #print "f1_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "f1_macro"))
+    #print "precision_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "precision_macro"))
+    #print "recall_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "recall_macro"))
 
     #preds = cross_val_predict(forest, X, y, cv=10)
     #print metrics.accuracy_score(y, preds)
 
-    importanceMat = ([[0] * len(names)]) * 1000
-    for i in range(1000):
-        forest.fit(X, y)
-        importanceMat[i] = forest.feature_importances_
+    #importanceMat = ([[0] * len(names)]) * 1000
+    #for i in range(1000):
+    #    forest.fit(X, y)
+    #    importanceMat[i] = forest.feature_importances_
 
-    importanceArr = np.asarray(importanceMat)
-    stdVec= np.std(importanceArr, axis = 0)
-    importanceVec = np.sum(importanceArr, axis = 0)/1000
+    #importanceArr = np.asarray(importanceMat)
+    #stdVec= np.std(importanceArr, axis = 0)
+    #importanceVec = np.sum(importanceArr, axis = 0)/1000
 
 
     #dumpPath = "/home/sameer/Projects/ACORFORMED/Data/stats.xlsx"
-    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.STATS_MATRIX)
-    print "\n"
-    descIndices = np.argsort(importanceVec)
+    #dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.STATS_MATRIX)
+    #print "\n"
+    #descIndices = np.argsort(importanceVec)
     
-    featureStats = np.vstack((importanceVec[descIndices[::-1]], stdVec[descIndices[::-1]]))
-    pdDump = pd.DataFrame(featureStats)
+    #featureStats = np.vstack((importanceVec[descIndices[::-1]], stdVec[descIndices[::-1]]))
+    #pdDump = pd.DataFrame(featureStats)
 
-    pdDump.columns = np.asarray(names)[descIndices[::-1]]
+    #pdDump.columns = np.asarray(names)[descIndices[::-1]]
 
-    print np.asarray(names)[descIndices[::-1]]
-    print importanceVec[descIndices[::-1]]
-    print stdVec[descIndices[::-1]]
-    pdDump.to_excel(dumpPath, index = False)
-    """
-    for i in range(len(names)):
-        print names[descIndices[i]], importanceVec[descIndices[i]], stdVec[descIndices[i]]
-    """
+    #print np.asarray(names)[descIndices[::-1]]
+    #print importanceVec[descIndices[::-1]]
+    #print stdVec[descIndices[::-1]]
+    #pdDump.to_excel(dumpPath, index = False)
 
+
+    def randomForest(dataFile, modelTarget):
+        logger.info("randomForest(dataFile={df}, modelTarget={mt})".format(df=dataFile, mt=modelTarget))
+
+        samples = pd.read_excel(dataFile)
+
+        names = ("Expert", "Head_Entropy_Start", "Head_Entropy_Mid", "Head_Entropy_End", "Avg_HandEntropy_Begin",
+                 "Avg_HandEntropy_Mid", "Avg_HandEntropy_End", "Avg_SentenceLength_Begin", "Avg_SentenceLength_Mid",
+                 "Avg_SentenceLength_End", "Avg_IPUlen_Begin", "Avg_IPUlen_Middle", "Avg_IPUlen_End", "Ratio1_Begin",
+                 "Ratio1_Mid", "Ratio1_End", "Ratio2_Begin", "Ratio2_Mid", "Ratio2_End", "Duration", "Presence Class",
+                 "Co-presence Class")
+
+        samples = samples[list(names)]
+        # JB / not sure why computed matrix has different names...
+        samples = samples.rename(index=str,
+                                 columns={"Presence Class": "PresenceClass", "Co-presence Class": "CopresenceClass"})
+
+        samples_split = []
+        if (modelTarget == "presence"):
+            samples_split.append(samples[samples.PresenceClass == 1])
+            samples_split.append(samples[samples.PresenceClass == 2])
+            samples_split.append(samples[samples.PresenceClass == 3])
+
+        elif (modelTarget == "copresence"):
+            samples_split.append(samples[samples.CopresenceClass == 1])
+            samples_split.append(samples[samples.CopresenceClass == 2])
+            samples_split.append(samples[samples.CopresenceClass == 3])
+        else:
+            sys.exit("Invalid input. Please pick between presence and copresence")
+
+        maxClassSize = max(samples_split[0].shape[0], samples_split[1].shape[0], samples_split[2].shape[0])
+
+        upsampled = []
+        # todo upsample with SMOTE algorithm ? https://imbalanced-learn.readthedocs.io/en/stable/generated/imblearn.over_sampling.SMOTE.html
+        for samples in samples_split:
+            if (samples.shape[0] == maxClassSize):
+                upsampled.append(samples)
+            else:
+                upsampled.append(resample(samples, replace=True, n_samples=maxClassSize, random_state=None))
+
+        balanced_set = pd.concat(upsampled)
+
+        forest = RandomForestClassifier()
+        sv = SVC()
+
+        X = np.nan_to_num(balanced_set.as_matrix(names))
+
+        if (modelTarget == "presence"):
+            y = np.array(balanced_set["PresenceClass"].tolist())
+
+        else:
+            y = np.array(balanced_set["CopresenceClass"].tolist())
+
+        # print X.shape
+        print modelTarget, "random forest"
+        print "f1_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring="f1_macro"))
+        print "precision_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring="precision_macro"))
+        print "recall_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring="recall_macro"))
+
+        print "\n", modelTarget, "SVM"
+        print "f1_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring="f1_macro"))
+        print "precision_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring="precision_macro"))
+        print "recall_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring="recall_macro"))
+
+        # preds = cross_val_predict(forest, X, y, cv=10)
+        # print metrics.accuracy_score(y, preds)
+
+        importanceMat = ([[0] * len(names)]) * 1000
+        for i in range(1000):
+            forest.fit(X, y)
+            importanceMat[i] = forest.feature_importances_
+
+        importanceArr = np.asarray(importanceMat)
+        stdVec = np.std(importanceArr, axis=0)
+        importanceVec = np.sum(importanceArr, axis=0) / 1000
+
+        # dumpPath = "/home/sameer/Projects/ACORFORMED/Data/stats.xlsx"
+        dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.STATS_MATRIX)
+        print "\n"
+        descIndices = np.argsort(importanceVec)
+
+        featureStats = np.vstack((importanceVec[descIndices[::-1]], stdVec[descIndices[::-1]]))
+        pdDump = pd.DataFrame(featureStats)
+
+        pdDump.columns = np.asarray(names)[descIndices[::-1]]
+
+        print np.asarray(names)[descIndices[::-1]]
+        print importanceVec[descIndices[::-1]]
+        print stdVec[descIndices[::-1]]
+        pdDump.to_excel(dumpPath, index=False)
 
     #graphTupleList (sorted(zip(map(lambda x: round(x, 4), forest.feature_importances_), names), reverse=True))
     
@@ -615,6 +743,18 @@ def computeFeatures(pathsList, splitratios):
     removeNaN()
     computeIPUlengths(pathsList, splitratios)
 
+def computeAveragedMatrix(dataFile, outputFile):
+    print("computeAveragedMatrix(dataFile={df}, outputFile={of})".format(df=dataFile, of=outputFile))
+
+    samples = pd.read_excel(dataFile)
+
+    names = ("Expert", "Head_Entropy_Start", "Head_Entropy_Mid", "Head_Entropy_End", "Avg_HandEntropy_Begin", "Avg_HandEntropy_Mid", "Avg_HandEntropy_End", "Avg_SentenceLength_Begin", "Avg_SentenceLength_Mid", "Avg_SentenceLength_End", "Avg_IPUlen_Begin", "Avg_IPUlen_Middle", "Avg_IPUlen_End", "Ratio1_Begin", "Ratio1_Mid", "Ratio1_End", "Ratio2_Begin", "Ratio2_Mid", "Ratio2_End", "Duration")
+
+    samples = samples[list(names)]
+
+    samples['Head_Entropy_Avg'] = samples[['Head_Entropy_Start', 'Head_Entropy_Mid', 'Head_Entropy_End']].mean(axis=1)
+    print(samples)
+
 def main(argv):
 
     # cli parameters
@@ -624,9 +764,15 @@ def main(argv):
     args = parser.parse_args()
     print("Phases ratios: " + str(args.splits))
 
-    pathsList = filePaths()
-    splitratios = args.splits
+    print("Logging to "+config.LOGFILE)
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+    logging.basicConfig(filename=config.LOGFILE, level=logging.DEBUG, format='%(levelname)s : %(asctime)s : %(name)s : %(message)s')
+    logger = logging.getLogger(__name__)
 
+    pathsList = filePaths()
+    print("pathsList: " + str(pathsList))
+    splitratios = args.splits
 
     computeFeatures(pathsList, splitratios)
     prepareMatrix()
