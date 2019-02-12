@@ -3,6 +3,8 @@ A python configuration file containing only variables (properties) declarations.
 """
 
 import os
+import random
+import numpy as np
 from datetime import datetime
 
 ROOT_PATH = os.path.join('C:\\', 'IAAA' ,'TER')
@@ -21,7 +23,7 @@ TOOLS_PATH = os.path.join(ROOT_PATH, 'resources', 'tools')
 SPPAS_1 = 'SPPAS-1.8.6'
 SPPAS_2 = 'SPPAS-2.0-2019-01-08'
 SPPAS_PATH = os.path.join(TOOLS_PATH, SPPAS_1)
-SPPAS_SRC_PATH = os.path.join(SPPAS_PATH, 'src')
+SPPAS_SRC_PATH = os.path.join(SPPAS_PATH, 'sppas', 'src')
 
 SPPAS_GREG_SRC_PATH = os.path.join(PREV_CORPUS_PATH, 'tools')
 
@@ -37,9 +39,19 @@ PYAA_SRC_PATH = os.path.join(TOOLS_PATH, 'pyAudioAnalysis', 'pyAudioAnalysis', '
 # Behavioural
 
 DEFAULT_PHASE_SPLIT = [0.15, 0.70, 0.15]
+NO_PHASE_SPLIT = [0, 1, 0]
 
 CURDATE = datetime.now().strftime("%Y-%m%d_%H-%M-%S")
+
+LOGFILE = os.path.join(ROOT_PATH, 'predpres-'+CURDATE+'.log')
+
 FEATURES_MATRIX = "matrix" + CURDATE + ".xlsx"
+
 STATS_MATRIX = "stats-"+CURDATE+".xlsx"
 STATS_PRESENCE_MATRIX = "statsPres-"+CURDATE+".xlsx"
 STATS_COPRESENCE_MATRIX = "statsCopres-"+CURDATE+".xlsx"
+
+
+seed = 12
+random.seed(seed)
+np.random.seed(seed)
