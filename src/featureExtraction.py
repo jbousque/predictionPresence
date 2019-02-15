@@ -60,18 +60,16 @@ def filePaths():
     return outerArr
 
 def computePOStags(pathsList, splitratios):
-    crashlist = ["N1A-02-Casque-micro.E1-5.xra", "N2B-02-PC-micro.E1-5.xra", "E6F-03-Cave-micro.E1-5.xra",
-                 "N15C-01-Casque-micro.E1-5.xra", "N3C-01-Casque-micro.E1-5.xra", "E2B-02-Cave-micro.E2B-latin1.xra",
-                 "N6F-05-PC-micro.E1-5.xra", "N6F-01-PC-micro.E1-5.xra", "N6F-04-Casque-micro.E1-5.xra",
-                 "N6F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
-                 "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N4D-01-Casque-micro.E1-5.xra",
-                 "E7A-02-Casque-micro.E1-5.xra"]
-    filter_func = lambda s: not any(x in s for x in crashlist)
-    matching_paths = filter(filter_func, pathsList)
-    for paths in matching_paths:
+    crashlist = ["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
+                 "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra", "E02B-02-Cave-micro.E2B-latin1.xra",
+                 "N06F-05-PC-micro.E1-5.xra", "N06F-01-PC-micro.E1-5.xra", "N06F-04-Casque-micro.E1-5.xra",
+                 "N06F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
+                 "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N04D-01-Casque-micro.E1-5.xra",
+                 "E07A-02-Casque-micro.E1-5.xra"]
+    for paths in pathsList:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
-            if(fileext == ".xra" and path not in crashlist):# and path not in throughList):
+            if(fileext == ".xra" and not any(crashpath in path for crashpath in crashlist)): # and path not in throughList):
                 for wavPath in paths:
                     _, extWav = os.path.splitext(wavPath)
                     if(extWav == ".wav"):
@@ -81,23 +79,23 @@ def computePOStags(pathsList, splitratios):
                         envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
                         candidate = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))))
                         dest = os.path.join(profBCorpusPath, candidate, envType, "Features", "pos.txt")
+                        # make sure 'Features' path exists
+                        if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                         np.savetxt(dest, POSfreqArr)
 
 
 def computeSentenceLengths(pathsList, splitratios):
     #code cleanup: computeSentenceLengths and computePOStags do redundant work. Could be improved
-    crashlist = ["N1A-02-Casque-micro.E1-5.xra", "N2B-02-PC-micro.E1-5.xra", "E6F-03-Cave-micro.E1-5.xra",
-                 "N15C-01-Casque-micro.E1-5.xra", "N3C-01-Casque-micro.E1-5.xra", "E2B-02-Cave-micro.E2B-latin1.xra",
-                 "N6F-05-PC-micro.E1-5.xra", "N6F-01-PC-micro.E1-5.xra", "N6F-04-Casque-micro.E1-5.xra",
-                 "N6F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
-                 "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N4D-01-Casque-micro.E1-5.xra",
-                 "E7A-02-Casque-micro.E1-5.xra"]
-    filter_func = lambda s: not any(x in s for x in crashlist)
-    matching_paths = filter(filter_func, pathsList)
-    for paths in matching_paths:
+    crashlist = ["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
+                 "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra", "E02B-02-Cave-micro.E2B-latin1.xra",
+                 "N06F-05-PC-micro.E1-5.xra", "N06F-01-PC-micro.E1-5.xra", "N06F-04-Casque-micro.E1-5.xra",
+                 "N06F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
+                 "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N04D-01-Casque-micro.E1-5.xra",
+                 "E07A-02-Casque-micro.E1-5.xra"]
+    for paths in pathsList:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
-            if(fileext == ".xra" and path not in crashlist):# and path not in throughList):
+            if(fileext == ".xra" and not any(crashpath in path for crashpath in crashlist)):# and path not in throughList):
                 for wavPath in paths:
                     _, extWav = os.path.splitext(wavPath)
                     if(extWav == ".wav"):
@@ -124,12 +122,10 @@ def computeEntropies(pathsList, splitratios):
 
 def computeIPUlengths(pathsList, splitratios):
     crashlist = ["N21C-03-PC-micro.wav"]
-    filter_func = lambda s: not any(x in s for x in crashlist)
-    matching_paths = filter(filter_func, pathsList)
-    for paths in matching_paths:
+    for paths in pathsList:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
-            if(fileext == ".wav" and path not in crashlist):
+            if(fileext == ".wav" and not any(crashpath in path for crashpath in crashlist)):
                 entArr = IPUdriver(path, splitratios)
     
                 envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(path))))
@@ -449,7 +445,8 @@ def randomForest_gridsearch(dataFile, modelTarget, upsample=False):
     print modelTarget, "random forest"
     from sklearn.model_selection import GridSearchCV # todo move to beginning with other imports
 
-    n_estimators = np.concatenate((np.arange(1,10), np.arange(10,100,10)))
+    #n_estimators = np.concatenate((np.arange(1,10), np.arange(10,100,10)))
+    n_estimators = np.arange(1,100)
     class_weights = [None, 'balanced', 'balanced_subsample']
     folds = np.concatenate((np.arange(1,10), np.arange(10,len(X),10)))
     param_grid = dict(n_estimators=n_estimators, class_weight=class_weights)
@@ -457,7 +454,8 @@ def randomForest_gridsearch(dataFile, modelTarget, upsample=False):
                         scoring=['f1_macro', 'precision_macro', 'recall_macro'],
                         refit='precision_macro',
                         cv=20,
-                        verbose=10)
+                        return_train_score=True,
+                        verbose=1)
 
     grid = grid.fit(X_train, y_train)
 
@@ -469,45 +467,10 @@ def randomForest_gridsearch(dataFile, modelTarget, upsample=False):
 
     return grid
 
-    #print "f1_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "f1_macro"))
-    #print "precision_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "precision_macro"))
-    #print "recall_macro", np.mean(cross_val_score(forest, X, y, cv=10, scoring = "recall_macro"))
-
-    #print "\n", modelTarget, "SVM"
-    #print "f1_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "f1_macro"))
-    #print "precision_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "precision_macro"))
-    #print "recall_macro", np.mean(cross_val_score(sv, X, y, cv=10, scoring = "recall_macro"))
-
-    #preds = cross_val_predict(forest, X, y, cv=10)
-    #print metrics.accuracy_score(y, preds)
-
-    #importanceMat = ([[0] * len(names)]) * 1000
-    #for i in range(1000):
-    #    forest.fit(X, y)
-    #    importanceMat[i] = forest.feature_importances_
-
-    #importanceArr = np.asarray(importanceMat)
-    #stdVec= np.std(importanceArr, axis = 0)
-    #importanceVec = np.sum(importanceArr, axis = 0)/1000
 
 
-    #dumpPath = "/home/sameer/Projects/ACORFORMED/Data/stats.xlsx"
-    #dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.STATS_MATRIX)
-    #print "\n"
-    #descIndices = np.argsort(importanceVec)
-    
-    #featureStats = np.vstack((importanceVec[descIndices[::-1]], stdVec[descIndices[::-1]]))
-    #pdDump = pd.DataFrame(featureStats)
 
-    #pdDump.columns = np.asarray(names)[descIndices[::-1]]
-
-    #print np.asarray(names)[descIndices[::-1]]
-    #print importanceVec[descIndices[::-1]]
-    #print stdVec[descIndices[::-1]]
-    #pdDump.to_excel(dumpPath, index = False)
-
-
-    def randomForest(dataFile, modelTarget):
+def randomForest(dataFile, modelTarget):
         logger.info("randomForest(dataFile={df}, modelTarget={mt})".format(df=dataFile, mt=modelTarget))
 
         samples = pd.read_excel(dataFile)
@@ -754,6 +717,113 @@ def computeAveragedMatrix(dataFile, outputFile):
 
     samples['Head_Entropy_Avg'] = samples[['Head_Entropy_Start', 'Head_Entropy_Mid', 'Head_Entropy_End']].mean(axis=1)
     print(samples)
+
+
+
+def sorted_alphanumeric(data):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(data, key=alphanum_key)
+
+
+
+def preprocess_agent_data():
+    from pydub import AudioSegment
+    from os import listdir
+    from os.path import isfile, join
+    from xml.dom import minidom
+    import re
+    import unicodecsv as csv
+
+    logger.info("preprocess_agent_data()")
+
+    mapping = {}
+    out_rec_dir = None
+    out_rec = None
+    chat_xml = None
+    chat_xml_dir = None
+    mode = None
+    subject = None
+    for root, dirs, files in os.walk(config.CORPUS_PATH):
+        if os.path.basename(os.path.normcase(root)) == 'unity':
+            split_path = os.path.normpath(root).split(os.path.sep)
+            for file in files:
+                name, ext = os.path.splitext(file)
+                if ext == '.txt' and 'out_record' in name:
+                    out_rec = file
+                    out_rec_dir = root
+                    mode = split_path[-2]
+                    subject = split_path[-3]
+                    logger.debug('Found out record ' + out_rec + ' for ' + subject + ' mode ' + mode)
+        elif os.path.basename(os.path.normcase(root)).startswith('session-'):
+            for file in files:
+                name, ext = os.path.splitext(file)
+                if ext == '.xml' and name.startswith('chat-history-'):
+                    chat_xml = file
+                    chat_xml_dir = root
+                    logger.debug('Found chat-history ' + chat_xml)
+        if out_rec is not None and chat_xml is not None:
+            print("Treating record ... ")
+
+            mydoc = minidom.parse(chat_xml)
+
+            times = []
+            texts = []
+
+            # retrieve time alignments from chat-history
+            session = mydoc.getElementsByTagName('session')[0]
+            for item in session.childNodes:
+                if item.nodeType != item.TEXT_NODE:
+                    if item.tagName == 'turn' and item.attributes['speaker'].value == 'greta':
+                        times.append(int(item.attributes['startTime'].value))
+                        texts.append(item.childNodes[1].firstChild.data)
+                    elif item.tagName == 'event':
+                        times.append(int(item.attributes['startTime'].value))
+                        texts.append('')
+
+            print(len(times))
+
+            np.savetxt('newtexts.txt', texts, fmt='%s')
+
+            wavdir = out_rec_dir
+            wavfiles = [f for f in sorted_alphanumeric(listdir(wavdir)) if isfile(join(wavdir, f)) and f.endswith(".wav")]
+            print(wavfiles)
+            print(len(wavfiles))
+
+            if len(wavfiles) != len(times):
+                print("There should be as many wav files as IPUs !")
+
+            wavs = []
+            for wavfile in wavfiles:
+                song = AudioSegment.from_wav(os.path.join(wavdir, wavfile))
+                print(len(song))
+                wavs.append(song)
+
+            newsound = AudioSegment.silent(duration=times[-1] + len(wavfiles[-1]))
+            for idx, wav in enumerate(wavs):
+                newsound = newsound.overlay(wav, position=times[idx])
+            newsound.export('newsound.wav', format='wav')
+
+            # generate CSV file
+            csvfile = open('newtranscription.csv', 'wb')
+            csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+            for i, (time, text) in enumerate(zip(times, texts)):
+                print(i, time, text)
+                tb = "{0:.2f}".format(time / 1000)
+                te = "{0:.2f}".format((time + len(wavs[i])) / 1000)
+                csvwriter.writerow(['ASR-Transcription', tb, te, text.encode('utf8')])
+            csvfile.close()
+
+            # todo use sppas to convert csv file + wav to xra file
+
+
+            # todo
+
+            out_rec = None
+            chat_xml = None
+            mode = None
+            subject = None
+
 
 def main(argv):
 
