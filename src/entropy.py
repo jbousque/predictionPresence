@@ -93,7 +93,7 @@ def entropy(pointMatrix):
         return entropy
     except scipy.spatial.qhull.QhullError:
         return np.NaN
-        print "Convex Hull Error"
+        print("Convex Hull Error")
 
 
 """
@@ -131,21 +131,35 @@ def targetEntropies(target, coordsDic):
     return np.array([entropy(xy_array), entropy(yz_array), entropy(zx_array)])
 
 
-def segmentEntropyMatrix(
-        coords):  # takes the coordinate array of one segment and returns the corresponding 15 x 1 entropy matrix, with the first 5 values representing the five entropy values of the first plane, followed by 5 valuesfor the second plane, and then for the third plane
+def segmentEntropyMatrix(coords, type="subject"):
+    """
+    takes the coordinate array of one segment and returns the corresponding 15 x 1 entropy matrix, with the
+    first 5 values representing the five entropy values of the first plane, followed by 5 valuesfor the second plane,
+    and then for the third plane
+    :param coords:
+    :return:
+    """
     allLabels = labels("coordLabels")
-    subjectLabels = labels("subjectLabels")
-    coordsDic = filteredDict(coords, allLabels, subjectLabels)
+    typeLabels = labels("{type}Labels".format(type=type))
+    coordsDic = filteredDict(coords, allLabels, typeLabels)
 
-    featMat = targetEntropies("HeadSubject", coordsDic)
-    featMat = np.vstack([featMat, targetEntropies("LeftWristSubject", coordsDic)])
-    featMat = np.vstack([featMat, targetEntropies("RightWristSubject", coordsDic)])
-    featMat = np.vstack([featMat, targetEntropies("LeftElbowSubject", coordsDic)])
-    featMat = np.vstack([featMat, targetEntropies("RightElbowSubject", coordsDic)])
+    if type == 'subject':
+        featMat = targetEntropies("HeadSubject", coordsDic)
+        featMat = np.vstack([featMat, targetEntropies("LeftWristSubject", coordsDic)])
+        featMat = np.vstack([featMat, targetEntropies("RightWristSubject", coordsDic)])
+        featMat = np.vstack([featMat, targetEntropies("LeftElbowSubject", coordsDic)])
+        featMat = np.vstack([featMat, targetEntropies("RightElbowSubject", coordsDic)])
+    else:
+        featMat = targetEntropies("Head", coordsDic)
+        # for agent we don't have wrist, using hand instead ...
+        featMat = np.vstack([featMat, targetEntropies("LeftHand", coordsDic)])
+        featMat = np.vstack([featMat, targetEntropies("RightHand", coordsDic)])
+        # for agent we don't have elbow, using arm instead ...
+        featMat = np.vstack([featMat, targetEntropies("LeftArm", coordsDic)])
+        featMat = np.vstack([featMat, targetEntropies("RightArm", coordsDic)])
 
     featMat = np.reshape(featMat, 15)
     return featMat
-
 
 def videoEntropyMatrix(fileName, splitRatios):
     coordArr = coordArray(fileName)
@@ -167,13 +181,10 @@ def videoEntropyMatrix(fileName, splitRatios):
         else:
             completeEntropyMatrix = segmentEntropyMatrix(splitArr[2])
 
-    print completeEntropyMatrix
-    print completeEntropyMatrix.shape
+    print(completeEntropyMatrix)
+    print(completeEntropyMatrix.shape)
     return completeEntropyMatrix
 
-
-def divide():
-    print "------------------------------------------------------------------------------\n"
 
 # videoEntropyMatrix('/home/sameer/Projects/ACORFORMED/Data/Data/N12F/PC/Unity/N12F-PC-Unity-out_record_DATE17-3-2_10-28-55.txt', [0.15, 0.70, 0.15])
 

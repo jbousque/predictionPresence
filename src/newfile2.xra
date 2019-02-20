@@ -1,0 +1,742 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Document Author="SPPAS" Date="2019-02-13" Format="1.2">
+  <Tier id="6f209a9a-2e65-0f63-0dd5-0584ea3b931a" tiername="ASR-Transcription">
+    <Metadata>
+      <Entry key="id">6f209a9a-2e65-0f63-0dd5-0584ea3b931a</Entry>
+    </Metadata>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="4375.0" radius="0.002" />
+            <End midpoint="5345.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">bonjour docteur</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="13488.0" radius="0.002" />
+            <End midpoint="15343.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="13978.0" radius="0.002" />
+            <End midpoint="14518.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">je vois</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="26721.0" radius="0.002" />
+            <End midpoint="27732.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">Non, docteur, j'ai toujours très mal ici</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="44981.0" radius="0.002" />
+            <End midpoint="46889.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">Mais, comment ça a pu arriver ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="52997.0" radius="0.002" />
+            <End midpoint="56971.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">Mais, comment ça a pu arriver ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="78083.0" radius="0.002" />
+            <End midpoint="83058.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais vous m'aviez dit que c'était qu'un petit polype</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="85386.0" radius="0.002" />
+            <End midpoint="88449.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais vous m'aviez dit que c'était qu'un petit polype</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="109408.0" radius="0.002" />
+            <End midpoint="112471.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais c'est quoi comme opération ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="114693.0" radius="0.002" />
+            <End midpoint="118966.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais la chirurgie ça ça consiste en quoi ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="127648.0" radius="0.002" />
+            <End midpoint="130554.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="149650.0" radius="0.002" />
+            <End midpoint="151538.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="150141.0" radius="0.002" />
+            <End midpoint="152029.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">je vois</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="161903.0" radius="0.002" />
+            <End midpoint="162443.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="178052.0" radius="0.002" />
+            <End midpoint="179907.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="190222.0" radius="0.002" />
+            <End midpoint="193603.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="190712.0" radius="0.002" />
+            <End midpoint="192567.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">oui</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="193704.0" radius="0.002" />
+            <End midpoint="194077.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">ça sera vous docteur ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="200073.0" radius="0.002" />
+            <End midpoint="201985.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">ça sera vous docteur ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="207778.0" radius="0.002" />
+            <End midpoint="209690.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">ça sera vous docteur ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="228515.0" radius="0.002" />
+            <End midpoint="230427.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">je vais rester encore longtemps ici ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="241471.0" radius="0.002" />
+            <End midpoint="244004.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">et après l'opération ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="251527.0" radius="0.002" />
+            <End midpoint="253287.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="251995.0" radius="0.002" />
+            <End midpoint="255376.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">oui docteur</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="262669.0" radius="0.002" />
+            <End midpoint="263766.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">oui docteur</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="270411.0" radius="0.002" />
+            <End midpoint="271508.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="270903.0" radius="0.002" />
+            <End midpoint="271286.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">non</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="275839.0" radius="0.002" />
+            <End midpoint="276967.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">au revoir docteur</Text>
+      </Label>
+    </Annotation>
+  </Tier>
+  <Tier id="5a412a8b-1b57-3f57-8ef4-8315fa7f791e" tiername="ASR-Transcription-2">
+    <Metadata>
+      <Entry key="id">5a412a8b-1b57-3f57-8ef4-8315fa7f791e</Entry>
+    </Metadata>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="4375.0" radius="0.002" />
+            <End midpoint="5345.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">bonjour docteur</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="13488.0" radius="0.002" />
+            <End midpoint="15343.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="13978.0" radius="0.002" />
+            <End midpoint="14518.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">je vois</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="26721.0" radius="0.002" />
+            <End midpoint="27732.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">Non, docteur, j'ai toujours très mal ici</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="44981.0" radius="0.002" />
+            <End midpoint="46889.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">Mais, comment ça a pu arriver ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="52997.0" radius="0.002" />
+            <End midpoint="56971.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">Mais, comment ça a pu arriver ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="78083.0" radius="0.002" />
+            <End midpoint="83058.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais vous m'aviez dit que c'était qu'un petit polype</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="85386.0" radius="0.002" />
+            <End midpoint="88449.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais vous m'aviez dit que c'était qu'un petit polype</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="109408.0" radius="0.002" />
+            <End midpoint="112471.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais c'est quoi comme opération ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="114693.0" radius="0.002" />
+            <End midpoint="118966.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">mais la chirurgie ça ça consiste en quoi ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="127648.0" radius="0.002" />
+            <End midpoint="130554.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="149650.0" radius="0.002" />
+            <End midpoint="151538.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="150141.0" radius="0.002" />
+            <End midpoint="152029.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">je vois</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="161903.0" radius="0.002" />
+            <End midpoint="162443.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="178052.0" radius="0.002" />
+            <End midpoint="179907.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="190222.0" radius="0.002" />
+            <End midpoint="193603.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="190712.0" radius="0.002" />
+            <End midpoint="192567.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">oui</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="193704.0" radius="0.002" />
+            <End midpoint="194077.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">ça sera vous docteur ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="200073.0" radius="0.002" />
+            <End midpoint="201985.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">ça sera vous docteur ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="207778.0" radius="0.002" />
+            <End midpoint="209690.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">ça sera vous docteur ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="228515.0" radius="0.002" />
+            <End midpoint="230427.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">je vais rester encore longtemps ici ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="241471.0" radius="0.002" />
+            <End midpoint="244004.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">et après l'opération ?</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="251527.0" radius="0.002" />
+            <End midpoint="253287.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="251995.0" radius="0.002" />
+            <End midpoint="255376.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">oui docteur</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="262669.0" radius="0.002" />
+            <End midpoint="263766.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">oui docteur</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="270411.0" radius="0.002" />
+            <End midpoint="271508.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0" />
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="270903.0" radius="0.002" />
+            <End midpoint="271286.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">non</Text>
+      </Label>
+    </Annotation>
+    <Annotation>
+      <Location>
+        <Localization score="1.0">
+          <Timeinterval>
+            <Begin midpoint="275839.0" radius="0.002" />
+            <End midpoint="276967.0" radius="0.002" />
+          </Timeinterval>
+        </Localization>
+      </Location>
+      <Label scoremode="max">
+        <Text score="1.0">au revoir docteur</Text>
+      </Label>
+    </Annotation>
+  </Tier>
+  <Hierarchy />
+</Document>

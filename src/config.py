@@ -14,6 +14,9 @@ ROOT_PATH = os.path.join('C:\\', 'IAAA' ,'TER')
 CORPUS_PATH = os.path.join(ROOT_PATH, 'data', 'ACORFORMED', 'Data') # profBCorpusPath
 PREV_CORPUS_PATH = os.path.join(ROOT_PATH, 'data', 'CorpusHMPassation') # gregCorpusPath
 
+# all produced files shall go here
+OUT_PATH = os.path.join(ROOT_PATH, '_output')
+
 # Tools
 
 TOOLS_PATH = os.path.join(ROOT_PATH, 'resources', 'tools')
@@ -40,6 +43,8 @@ PYAA_SRC_PATH = os.path.join(TOOLS_PATH, 'pyAudioAnalysis', 'pyAudioAnalysis', '
 
 # Behavioural
 
+FORCE_OW = True
+
 DEFAULT_PHASE_SPLIT = [0.15, 0.70, 0.15]
 NO_PHASE_SPLIT = [0, 1, 0]
 
@@ -47,7 +52,7 @@ CURDATE = datetime.now().strftime("%Y-%m%d_%H-%M-%S")
 
 LOGFILE = os.path.join(ROOT_PATH, 'predpres-'+CURDATE+'.log')
 
-FEATURES_MATRIX = "matrix" + CURDATE + ".xlsx"
+FEATURES_MATRIX = "matrix-" + CURDATE + ".xlsx"
 
 STATS_MATRIX = "stats-"+CURDATE+".xlsx"
 STATS_PRESENCE_MATRIX = "statsPres-"+CURDATE+".xlsx"

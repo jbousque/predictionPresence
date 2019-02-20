@@ -1,0 +1,72 @@
+2019-02-20 16:01:10 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-20 16:01:10 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-20 16:01:10 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-20 16:01:10 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-20 16:01:13 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-20 16:01:15 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-20 16:01:15 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-20 16:01:15 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-20 16:01:15 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-20 16:51:38 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-20 16:51:38 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-20 16:51:38 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-20 16:51:38 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-20 16:51:40 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-20 16:51:40 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-20 16:51:40 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-20 16:51:40 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-20 16:51:40 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-20 17:00:59 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-20 17:00:59 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-20 17:00:59 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-20 17:00:59 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-20 17:01:01 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-20 17:01:01 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-20 17:01:01 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-20 17:01:01 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-20 17:01:01 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-20 20:46:20 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-20 20:46:20 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-20 20:46:20 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-20 20:46:20 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-20 20:46:23 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-20 20:46:28 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-20 20:46:28 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-20 20:46:28 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-20 20:46:28 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-20 21:40:04 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-20 21:40:04 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-20 21:40:04 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-20 21:40:04 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-20 21:40:07 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-20 21:40:07 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-20 21:40:07 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-20 21:40:07 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-20 21:40:07 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-21 00:00:34 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-21 00:00:34 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-21 00:00:34 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-21 00:00:34 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-21 00:00:37 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-21 00:00:37 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-21 00:00:37 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-21 00:00:37 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-21 00:00:37 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-21 00:05:21 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-21 00:05:21 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-21 00:05:21 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-21 00:05:21 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-21 00:05:23 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-21 00:05:24 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-21 00:05:24 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-21 00:05:24 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-21 00:05:24 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'
+2019-02-21 00:08:11 INFO  [main] f.o.u.ProcessFiltersList - Build TokensFilter's pipe ...
+2019-02-21 00:08:11 INFO  [main] f.o.u.ProcessFiltersList - [20,lpl] NO TokensFilter for the pipe
+2019-02-21 00:08:11 INFO  [main] f.o.u.ProcessFiltersList - [50,lpl] Add TokensFilter's to the pipe
+2019-02-21 00:08:11 INFO  [main] f.o.u.ProcessFiltersList - [60,lpl-oral] Add TokensFilter's to the pipe
+2019-02-21 00:08:13 WARN  [main] f.o.l.LPLLexiconInfos - Merge change lemma 'pences' for tag 'Ncmp--' (before 'pence')
+2019-02-21 00:08:13 DEBUG [main] f.o.i.ELANliteTokensWriter - connect ELAN Reader/Writer
+2019-02-21 00:08:13 DEBUG [main] f.o.u.PURunner - Interconnect token's reader 'class fr.ortolang.io.ELANliteStAXReader$ELANliteTokensReader' with writer 'class fr.ortolang.io.ELANliteTokensWriter'
+2019-02-21 00:08:13 INFO  [main] f.o.u.PURunner -  start reading 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign.eaf'
+2019-02-21 00:08:13 INFO  [main] f.o.u.PURunner -  start writing 'C:\IAAA\TER\data\ACORFORMED\Data\E04D\Casque\Superviseur\session-170421-1321\000000-00_micro-palign-marsatag.eaf'

@@ -8,8 +8,6 @@ import numpy as np
 import config
 import logging
 
-from xml.dom import minidom
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,18 +28,22 @@ from annotationdata import TimeInterval
 
 def alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver):
 	"""
-	Inputs 	:	xra transcription
-				wav audio
-				SPPAS path
-				SPPAS version
-	Output 	: 	eaf transcription aligned with audio
-	"""
 
+	:param transcriptionFile: xra transcription file name
+	:param wavFile: wav file name
+	:param sppaspath:
+	:param sppasver:
+	:return: eaf transcription aligned with audio
+	"""
+	logger.info('alignmentFile(transcriptionFile=%s, wavFile=%s, sppaspath=%s, sppasver=%s', transcriptionFile, wavFile, sppaspath, sppasver)
 	fileName, fileExt = os.path.splitext(transcriptionFile)
-	cmd = ["python", os.path.join(greg_path, "sppas_afterClosedCap.py"), transcriptionFile, "-D", sppaspath, "-V", sppasver]
-	logger.debug("Executing " + subprocess.list2cmdline(cmd))
-	print subprocess.check_output(cmd)
-	elanFile = os.path.join(fileName + ".eaf")		#ELAN file which created by the above call
+	elanFile = os.path.join(fileName + ".eaf")
+	if os.path.isfile(elanFile) and not config.FORCE_OW:
+		logger.debug('alignmentFile: %s already exists', elanFile)
+	else:
+		cmd = ["python", os.path.join(greg_path, "sppas_afterClosedCap.py"), transcriptionFile, "-D", sppaspath, "-V", sppasver]
+		logger.debug("Executing %s", subprocess.list2cmdline(cmd))
+		logger.debug(subprocess.check_output(cmd))
 
 	trs = annotationdata.aio.read(elanFile)
 
@@ -61,47 +63,59 @@ def alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver):
 	alignFileName = wavFileName + "-palign.eaf"
 
 	#Subprocess call to create tokenized transcription file.
-	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName]))
-	print subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName])
+	if os.path.isfile(tokFileName) and not config.FORCE_OW:
+		logger.debug('alignmentFile: %s already exists', tokFileName)
+	else:
+		logger.debug("alignmentFile: tokenizing " + subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName]))
+		logger.debug(subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "tokenize.py"), '-r', os.path.join(sppaspath, "resources", "vocab", "fra.vocab"), "-i", elanFile, "-o", tokFileName]))
 
-	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName]))
-	#Subprocess call to create phonetized transcription file.	
-	print subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName])
+	if os.path.isfile(phonFileName) and not config.FORCE_OW:
+		logger.debug('alignmentFile: %s already exists', phonFileName)
+	else:
+		logger.debug('alignmentFile: phonetizing ' + subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName]))
+		#Subprocess call to create phonetized transcription file.
+		logger.debug(subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "phonetize.py"), '-r', os.path.join(sppaspath, "resources", "dict", "fra.dict"), "-i", tokFileName, "-o", phonFileName]))
 
-	print("DEBUG ", subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")]))
-	#Subprocess call to create transcription file aligned with audio.
-	print subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")])
+	if os.path.isfile(alignFileName) and not config.FORCE_OW:
+		logger.debug('alignmentFile: %s already exists', alignFileName)
+	else:
+		logger.debug('alignmentFile: aligning ' + subprocess.list2cmdline(["python", os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")]))
+		#Subprocess call to create transcription file aligned with audio.
+		logger.debug(subprocess.check_output(["python", os.path.join(sppaspath, "sppas", "bin", "alignment.py"), '-w', wavFile, "-i", phonFileName, "-I", tokFileName, "-o", alignFileName, "-r", os.path.join(sppaspath, "resources", "models", "models-fra")]))
 
 	return alignFileName
 
 def POStaggedFile(alignFileName):
 	#Inputs 	: eaf transcription aligned with audio
 	#Output 	: eaf transcription with a tier for part-of-speech labels
-	logging.info("POStaggedFile(alignFileName="+alignFileName+')')
+	logger.info("POStaggedFile(alignFileName=%s)", alignFileName)
 	# use 'token' instead of 'TokensAlign' ?
 	cmd = [config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName]
-	logging.debug("cmd " + ' '.join(cmd))
-	logging.debug("POStaggedFile: ", subprocess.list2cmdline(cmd))
-	logging.info(subprocess.check_output(cmd))
+	logger.debug("cmd " + ' '.join(cmd))
+	logger.debug("POStaggedFile: ", str(subprocess.list2cmdline(cmd)))
+	logger.debug(subprocess.check_output(cmd))
     # todo put back "lpl-oral-no-punct" instead of "lpl-oral"
 
 
 	fileName, fileExt = os.path.splitext(alignFileName)
-	logging.info("POStaggedFile return " + os.path.join(fileName + "-marsatag.eaf"))
+	logger.info("POStaggedFile return " + os.path.join(fileName + "-marsatag.eaf"))
 	return os.path.join(fileName + "-marsatag.eaf")
 
 def PunctuatedFile(alignFileName):
-	#Inputs 	: eaf transcription aligned with audio
-	#Output 	: eaf transcription with a tier for part-of-speech and punctuation labels
-	logging.info("PunctuatedFile(alignFileName="+alignFileName+")")
+	"""
+
+	:param alignFileName: eaf transcription aligned with audio
+	:return: eaf transcription with a tier for part-of-speech and punctuation labels
+	"""
+	logger.info("PunctuatedFile(alignFileName=%s)", alignFileName)
 	# use 'token' instead of 'TokensAlign' ?
 	cmd = [config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatagPunc.eaf", alignFileName]
-	logging.debug("PunctuatedFile: " + subprocess.list2cmdline(cmd))
-	logging.info(subprocess.check_output(cmd))
+	logger.debug("PunctuatedFile: " + subprocess.list2cmdline(cmd))
+	logger.info(subprocess.check_output(cmd))
     # todo put back "lpl-oral-with-punct" instead of "lpl-oral"
 
 	fileName, fileExt = os.path.splitext(alignFileName)
-	logging.info("PunctuatedFile return "+os.path.join(fileName + "-marsatagPunc.eaf"))
+	logger.info("PunctuatedFile return %s", os.path.join(fileName + "-marsatagPunc.eaf"))
 	return os.path.join(fileName + "-marsatagPunc.eaf")		
 
 def fix_eaf_parent_ref(eafFileName):
@@ -142,7 +156,7 @@ def avgSentenceLength(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 				SPPAS version
 	#Output :	3-element numpy array containing average sentence lengths of each phase
 	"""
-
+	logger.info('avgSentenceLength(transcriptionFile=%s, wavFile=%s, splitUp=%s, sppaspath=%s, sppasver=%s)', transcriptionFile, wavFile, sppaspath, sppasver)
 	segment = AudioSegment.from_file(wavFile)												
 	duration = segment.duration_seconds
 
@@ -199,8 +213,15 @@ def avgSentenceLength(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 	return avgLengths
 
 
-def POSfreq(taggedTransFile, wavFile, splitUp):			#takes in the file generated by MarsaTag, along with a 3-element array for splitup, and returns a list of dicionaries with keys as parts-of-speech and values as their frequencies.
-
+def POSfreq(taggedTransFile, wavFile, splitUp):
+	"""
+	Takes in the file generated by MarsaTag, along with a 3-element array for splitup, and returns a list of
+	dicionaries with keys as parts-of-speech and values as their frequencies.
+	:param taggedTransFile:
+	:param wavFile:
+	:param splitUp:
+	:return:
+	"""
 	dictList = []
 	for i in range(3):
 		dictList.append(defaultdict(list))
@@ -211,9 +232,7 @@ def POSfreq(taggedTransFile, wavFile, splitUp):			#takes in the file generated b
 	splitPoint_1 = (splitUp[0]) * duration
 	splitPoint_2 = (splitUp[0] + splitUp[1]) * duration
 
-
-	print "s1 : ", splitPoint_1
-	print "s2 : ", splitPoint_2
+	logger.debug('POSfreq: split points %d / %d', splitPoint_1, splitPoint_2)
 
 	trs = annotationdata.aio.read(taggedTransFile)
 
@@ -222,8 +241,8 @@ def POSfreq(taggedTransFile, wavFile, splitUp):			#takes in the file generated b
 			break
 
 	for annotation in tier:
-		print annotation.GetLocation().GetBeginMidpoint() 
-		print annotation.GetLabel().GetValue()
+		#logger.debug(annotation.GetLocation().GetBeginMidpoint() )
+		#logger.debug(annotation.GetLabel().GetValue())
 
 		if(annotation.GetLocation().GetBeginMidpoint() < splitPoint_1):
 			if(not dictList[0][annotation.GetLabel().GetValue()]):
@@ -241,6 +260,7 @@ def POSfreq(taggedTransFile, wavFile, splitUp):			#takes in the file generated b
 			else:
 				dictList[2][annotation.GetLabel().GetValue()] += 1
 
+	logger.debug('POSfreq returns %s', str(dictList))
 	return dictList
 
 def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
@@ -252,11 +272,11 @@ def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 				SPPAS version
 	#Output :	9x3 numpy array containing the frequency of each POS tag in each phase (with rows arranged in lexicographic order of tag name)
 	"""
-	
+	logger.info('POSfeatures(transcriptionFile=%s, wavFile=%s, splitUp=%s, sppaspath=%s, sppasver=%s)', transcriptionFile, wavFile, splitUp, sppaspath, sppasver)
 	posFile = POStaggedFile(alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver))
 	fix_eaf_parent_ref(posFile)
 	POSdict = POSfreq(posFile, wavFile, splitUp)
-	logger.debug("POSfeatures: POSdict = "+str(POSdict))
+	logger.debug("POSfeatures: POSdict = %s", str(POSdict))
 	features = np.zeros((9, 3))
 
 	for i in range(3):

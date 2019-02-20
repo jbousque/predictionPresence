@@ -29,6 +29,8 @@ def avgIPU_length(audioFileLoc, audioFileName):
 	#f = os.path.join(audioFileLoc, audioFileName)
 	out_dir = os.path.join(audioFileLoc, "outputDir", audioFileName)
 
+	if not os.path.exists(os.path.dirname(out_dir)): os.makedirs(os.path.dirname(out_dir))
+
 	IPUobj = sppasIPUs()
 	IPUobj.run(audiofile = f, trsinputfile=None, trstieridx=None, ntracks=None, diroutput=out_dir, tracksext="xra", trsoutput="output.xra")
 
@@ -41,7 +43,7 @@ def avgIPU_length(audioFileLoc, audioFileName):
 
 	summary = pd.read_csv(index_file, sep = ' ', header = None)
 	summary = summary.dropna()
-	print summary
+	print(summary)
 
 	IPU_lengths = summary[1] - summary[0]
 	return IPU_lengths.mean()
@@ -57,8 +59,8 @@ def IPUdriver(audioFilePath, splitUp):
 
 	avgIPUarr = np.array([avg_begin, avg_mid, avg_end])
 
-	print avgIPUarr
-	print avgIPUarr[0], avgIPUarr[1], avgIPUarr[2]
+	print(avgIPUarr)
+	print(avgIPUarr[0], avgIPUarr[1], avgIPUarr[2])
 	return avgIPUarr
 
 #compute standard deviation

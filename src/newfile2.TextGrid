@@ -1,0 +1,662 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0.0
+xmax = 276967.0
+tiers? <exists>
+size = 3
+item []:
+    item [1]:
+        class = "IntervalTier"
+        name = "ASR-Transcription"
+        xmin = 0.000000
+        xmax = 276967.000000
+        intervals: size = 53
+        intervals [1]:
+            xmin = 0.0
+            xmax = 4375.0
+            text = ""
+        intervals [2]:
+            xmin = 4375.0
+            xmax = 5345.0
+            text = "bonjour docteur"
+        intervals [3]:
+            xmin = 5345.0
+            xmax = 13488.0
+            text = ""
+        intervals [4]:
+            xmin = 13488.0
+            xmax = 13978.0
+            text = ""
+        intervals [5]:
+            xmin = 13978.0
+            xmax = 14518.0
+            text = "je vois"
+        intervals [6]:
+            xmin = 14518.0
+            xmax = 26721.0
+            text = ""
+        intervals [7]:
+            xmin = 26721.0
+            xmax = 27732.0
+            text = "Non, docteur, j'ai toujours très mal ici"
+        intervals [8]:
+            xmin = 27732.0
+            xmax = 44981.0
+            text = ""
+        intervals [9]:
+            xmin = 44981.0
+            xmax = 46889.0
+            text = "Mais, comment ça a pu arriver ?"
+        intervals [10]:
+            xmin = 46889.0
+            xmax = 52997.0
+            text = ""
+        intervals [11]:
+            xmin = 52997.0
+            xmax = 56971.0
+            text = "Mais, comment ça a pu arriver ?"
+        intervals [12]:
+            xmin = 56971.0
+            xmax = 78083.0
+            text = ""
+        intervals [13]:
+            xmin = 78083.0
+            xmax = 83058.0
+            text = "mais vous m'aviez dit que c'était qu'un petit polype"
+        intervals [14]:
+            xmin = 83058.0
+            xmax = 85386.0
+            text = ""
+        intervals [15]:
+            xmin = 85386.0
+            xmax = 88449.0
+            text = "mais vous m'aviez dit que c'était qu'un petit polype"
+        intervals [16]:
+            xmin = 88449.0
+            xmax = 109408.0
+            text = ""
+        intervals [17]:
+            xmin = 109408.0
+            xmax = 112471.0
+            text = "mais c'est quoi comme opération ?"
+        intervals [18]:
+            xmin = 112471.0
+            xmax = 114693.0
+            text = ""
+        intervals [19]:
+            xmin = 114693.0
+            xmax = 118966.0
+            text = "mais la chirurgie ça ça consiste en quoi ?"
+        intervals [20]:
+            xmin = 118966.0
+            xmax = 127648.0
+            text = ""
+        intervals [21]:
+            xmin = 127648.0
+            xmax = 130554.0
+            text = ""
+        intervals [22]:
+            xmin = 130554.0
+            xmax = 149650.0
+            text = ""
+        intervals [23]:
+            xmin = 149650.0
+            xmax = 150141.0
+            text = ""
+        intervals [24]:
+            xmin = 150141.0
+            xmax = 151538.0
+            text = ""
+        intervals [25]:
+            xmin = 151538.0
+            xmax = 152029.0
+            text = "je vois"
+        intervals [26]:
+            xmin = 152029.0
+            xmax = 161903.0
+            text = ""
+        intervals [27]:
+            xmin = 161903.0
+            xmax = 162443.0
+            text = ""
+        intervals [28]:
+            xmin = 162443.0
+            xmax = 178052.0
+            text = ""
+        intervals [29]:
+            xmin = 178052.0
+            xmax = 179907.0
+            text = ""
+        intervals [30]:
+            xmin = 179907.0
+            xmax = 190222.0
+            text = ""
+        intervals [31]:
+            xmin = 190222.0
+            xmax = 190712.0
+            text = ""
+        intervals [32]:
+            xmin = 190712.0
+            xmax = 192567.0
+            text = "oui"
+        intervals [33]:
+            xmin = 192567.0
+            xmax = 193704.0
+            text = ""
+        intervals [34]:
+            xmin = 193704.0
+            xmax = 194077.0
+            text = "ça sera vous docteur ?"
+        intervals [35]:
+            xmin = 194077.0
+            xmax = 200073.0
+            text = ""
+        intervals [36]:
+            xmin = 200073.0
+            xmax = 201985.0
+            text = "ça sera vous docteur ?"
+        intervals [37]:
+            xmin = 201985.0
+            xmax = 207778.0
+            text = ""
+        intervals [38]:
+            xmin = 207778.0
+            xmax = 209690.0
+            text = "ça sera vous docteur ?"
+        intervals [39]:
+            xmin = 209690.0
+            xmax = 228515.0
+            text = ""
+        intervals [40]:
+            xmin = 228515.0
+            xmax = 230427.0
+            text = "je vais rester encore longtemps ici ?"
+        intervals [41]:
+            xmin = 230427.0
+            xmax = 241471.0
+            text = ""
+        intervals [42]:
+            xmin = 241471.0
+            xmax = 244004.0
+            text = "et après l'opération ?"
+        intervals [43]:
+            xmin = 244004.0
+            xmax = 251527.0
+            text = ""
+        intervals [44]:
+            xmin = 251527.0
+            xmax = 251995.0
+            text = ""
+        intervals [45]:
+            xmin = 251995.0
+            xmax = 253287.0
+            text = ""
+        intervals [46]:
+            xmin = 253287.0
+            xmax = 255376.0
+            text = "oui docteur"
+        intervals [47]:
+            xmin = 255376.0
+            xmax = 262669.0
+            text = ""
+        intervals [48]:
+            xmin = 262669.0
+            xmax = 263766.0
+            text = "oui docteur"
+        intervals [49]:
+            xmin = 263766.0
+            xmax = 270411.0
+            text = ""
+        intervals [50]:
+            xmin = 270411.0
+            xmax = 270903.0
+            text = ""
+        intervals [51]:
+            xmin = 270903.0
+            xmax = 271286.0
+            text = "non"
+        intervals [52]:
+            xmin = 271286.0
+            xmax = 275839.0
+            text = ""
+        intervals [53]:
+            xmin = 275839.0
+            xmax = 276967.0
+            text = "au revoir docteur"
+    item [2]:
+        class = "IntervalTier"
+        name = "ASR-Revised"
+        xmin = 0.000000
+        xmax = 276967.000000
+        intervals: size = 53
+        intervals [1]:
+            xmin = 0.0
+            xmax = 4375.0
+            text = ""
+        intervals [2]:
+            xmin = 4375.0
+            xmax = 5345.0
+            text = "bonjour docteur"
+        intervals [3]:
+            xmin = 5345.0
+            xmax = 13488.0
+            text = ""
+        intervals [4]:
+            xmin = 13488.0
+            xmax = 13978.0
+            text = ""
+        intervals [5]:
+            xmin = 13978.0
+            xmax = 14518.0
+            text = "je vois"
+        intervals [6]:
+            xmin = 14518.0
+            xmax = 26721.0
+            text = ""
+        intervals [7]:
+            xmin = 26721.0
+            xmax = 27732.0
+            text = "Non, docteur, j'ai toujours très mal ici"
+        intervals [8]:
+            xmin = 27732.0
+            xmax = 44981.0
+            text = ""
+        intervals [9]:
+            xmin = 44981.0
+            xmax = 46889.0
+            text = "Mais, comment ça a pu arriver ?"
+        intervals [10]:
+            xmin = 46889.0
+            xmax = 52997.0
+            text = ""
+        intervals [11]:
+            xmin = 52997.0
+            xmax = 56971.0
+            text = "Mais, comment ça a pu arriver ?"
+        intervals [12]:
+            xmin = 56971.0
+            xmax = 78083.0
+            text = ""
+        intervals [13]:
+            xmin = 78083.0
+            xmax = 83058.0
+            text = "mais vous m'aviez dit que c'était qu'un petit polype"
+        intervals [14]:
+            xmin = 83058.0
+            xmax = 85386.0
+            text = ""
+        intervals [15]:
+            xmin = 85386.0
+            xmax = 88449.0
+            text = "mais vous m'aviez dit que c'était qu'un petit polype"
+        intervals [16]:
+            xmin = 88449.0
+            xmax = 109408.0
+            text = ""
+        intervals [17]:
+            xmin = 109408.0
+            xmax = 112471.0
+            text = "mais c'est quoi comme opération ?"
+        intervals [18]:
+            xmin = 112471.0
+            xmax = 114693.0
+            text = ""
+        intervals [19]:
+            xmin = 114693.0
+            xmax = 118966.0
+            text = "mais la chirurgie ça ça consiste en quoi ?"
+        intervals [20]:
+            xmin = 118966.0
+            xmax = 127648.0
+            text = ""
+        intervals [21]:
+            xmin = 127648.0
+            xmax = 130554.0
+            text = ""
+        intervals [22]:
+            xmin = 130554.0
+            xmax = 149650.0
+            text = ""
+        intervals [23]:
+            xmin = 149650.0
+            xmax = 150141.0
+            text = ""
+        intervals [24]:
+            xmin = 150141.0
+            xmax = 151538.0
+            text = ""
+        intervals [25]:
+            xmin = 151538.0
+            xmax = 152029.0
+            text = "je vois"
+        intervals [26]:
+            xmin = 152029.0
+            xmax = 161903.0
+            text = ""
+        intervals [27]:
+            xmin = 161903.0
+            xmax = 162443.0
+            text = ""
+        intervals [28]:
+            xmin = 162443.0
+            xmax = 178052.0
+            text = ""
+        intervals [29]:
+            xmin = 178052.0
+            xmax = 179907.0
+            text = ""
+        intervals [30]:
+            xmin = 179907.0
+            xmax = 190222.0
+            text = ""
+        intervals [31]:
+            xmin = 190222.0
+            xmax = 190712.0
+            text = ""
+        intervals [32]:
+            xmin = 190712.0
+            xmax = 192567.0
+            text = "oui"
+        intervals [33]:
+            xmin = 192567.0
+            xmax = 193704.0
+            text = ""
+        intervals [34]:
+            xmin = 193704.0
+            xmax = 194077.0
+            text = "ça sera vous docteur ?"
+        intervals [35]:
+            xmin = 194077.0
+            xmax = 200073.0
+            text = ""
+        intervals [36]:
+            xmin = 200073.0
+            xmax = 201985.0
+            text = "ça sera vous docteur ?"
+        intervals [37]:
+            xmin = 201985.0
+            xmax = 207778.0
+            text = ""
+        intervals [38]:
+            xmin = 207778.0
+            xmax = 209690.0
+            text = "ça sera vous docteur ?"
+        intervals [39]:
+            xmin = 209690.0
+            xmax = 228515.0
+            text = ""
+        intervals [40]:
+            xmin = 228515.0
+            xmax = 230427.0
+            text = "je vais rester encore longtemps ici ?"
+        intervals [41]:
+            xmin = 230427.0
+            xmax = 241471.0
+            text = ""
+        intervals [42]:
+            xmin = 241471.0
+            xmax = 244004.0
+            text = "et après l'opération ?"
+        intervals [43]:
+            xmin = 244004.0
+            xmax = 251527.0
+            text = ""
+        intervals [44]:
+            xmin = 251527.0
+            xmax = 251995.0
+            text = ""
+        intervals [45]:
+            xmin = 251995.0
+            xmax = 253287.0
+            text = ""
+        intervals [46]:
+            xmin = 253287.0
+            xmax = 255376.0
+            text = "oui docteur"
+        intervals [47]:
+            xmin = 255376.0
+            xmax = 262669.0
+            text = ""
+        intervals [48]:
+            xmin = 262669.0
+            xmax = 263766.0
+            text = "oui docteur"
+        intervals [49]:
+            xmin = 263766.0
+            xmax = 270411.0
+            text = ""
+        intervals [50]:
+            xmin = 270411.0
+            xmax = 270903.0
+            text = ""
+        intervals [51]:
+            xmin = 270903.0
+            xmax = 271286.0
+            text = "non"
+        intervals [52]:
+            xmin = 271286.0
+            xmax = 275839.0
+            text = ""
+        intervals [53]:
+            xmin = 275839.0
+            xmax = 276967.0
+            text = "au revoir docteur"
+    item [3]:
+        class = "IntervalTier"
+        name = "ASR-Transcription-2"
+        xmin = 0.000000
+        xmax = 276967.000000
+        intervals: size = 53
+        intervals [1]:
+            xmin = 0.0
+            xmax = 4375.0
+            text = ""
+        intervals [2]:
+            xmin = 4375.0
+            xmax = 5345.0
+            text = "bonjour docteur"
+        intervals [3]:
+            xmin = 5345.0
+            xmax = 13488.0
+            text = ""
+        intervals [4]:
+            xmin = 13488.0
+            xmax = 13978.0
+            text = ""
+        intervals [5]:
+            xmin = 13978.0
+            xmax = 14518.0
+            text = "je vois"
+        intervals [6]:
+            xmin = 14518.0
+            xmax = 26721.0
+            text = ""
+        intervals [7]:
+            xmin = 26721.0
+            xmax = 27732.0
+            text = "Non, docteur, j'ai toujours très mal ici"
+        intervals [8]:
+            xmin = 27732.0
+            xmax = 44981.0
+            text = ""
+        intervals [9]:
+            xmin = 44981.0
+            xmax = 46889.0
+            text = "Mais, comment ça a pu arriver ?"
+        intervals [10]:
+            xmin = 46889.0
+            xmax = 52997.0
+            text = ""
+        intervals [11]:
+            xmin = 52997.0
+            xmax = 56971.0
+            text = "Mais, comment ça a pu arriver ?"
+        intervals [12]:
+            xmin = 56971.0
+            xmax = 78083.0
+            text = ""
+        intervals [13]:
+            xmin = 78083.0
+            xmax = 83058.0
+            text = "mais vous m'aviez dit que c'était qu'un petit polype"
+        intervals [14]:
+            xmin = 83058.0
+            xmax = 85386.0
+            text = ""
+        intervals [15]:
+            xmin = 85386.0
+            xmax = 88449.0
+            text = "mais vous m'aviez dit que c'était qu'un petit polype"
+        intervals [16]:
+            xmin = 88449.0
+            xmax = 109408.0
+            text = ""
+        intervals [17]:
+            xmin = 109408.0
+            xmax = 112471.0
+            text = "mais c'est quoi comme opération ?"
+        intervals [18]:
+            xmin = 112471.0
+            xmax = 114693.0
+            text = ""
+        intervals [19]:
+            xmin = 114693.0
+            xmax = 118966.0
+            text = "mais la chirurgie ça ça consiste en quoi ?"
+        intervals [20]:
+            xmin = 118966.0
+            xmax = 127648.0
+            text = ""
+        intervals [21]:
+            xmin = 127648.0
+            xmax = 130554.0
+            text = ""
+        intervals [22]:
+            xmin = 130554.0
+            xmax = 149650.0
+            text = ""
+        intervals [23]:
+            xmin = 149650.0
+            xmax = 150141.0
+            text = ""
+        intervals [24]:
+            xmin = 150141.0
+            xmax = 151538.0
+            text = ""
+        intervals [25]:
+            xmin = 151538.0
+            xmax = 152029.0
+            text = "je vois"
+        intervals [26]:
+            xmin = 152029.0
+            xmax = 161903.0
+            text = ""
+        intervals [27]:
+            xmin = 161903.0
+            xmax = 162443.0
+            text = ""
+        intervals [28]:
+            xmin = 162443.0
+            xmax = 178052.0
+            text = ""
+        intervals [29]:
+            xmin = 178052.0
+            xmax = 179907.0
+            text = ""
+        intervals [30]:
+            xmin = 179907.0
+            xmax = 190222.0
+            text = ""
+        intervals [31]:
+            xmin = 190222.0
+            xmax = 190712.0
+            text = ""
+        intervals [32]:
+            xmin = 190712.0
+            xmax = 192567.0
+            text = "oui"
+        intervals [33]:
+            xmin = 192567.0
+            xmax = 193704.0
+            text = ""
+        intervals [34]:
+            xmin = 193704.0
+            xmax = 194077.0
+            text = "ça sera vous docteur ?"
+        intervals [35]:
+            xmin = 194077.0
+            xmax = 200073.0
+            text = ""
+        intervals [36]:
+            xmin = 200073.0
+            xmax = 201985.0
+            text = "ça sera vous docteur ?"
+        intervals [37]:
+            xmin = 201985.0
+            xmax = 207778.0
+            text = ""
+        intervals [38]:
+            xmin = 207778.0
+            xmax = 209690.0
+            text = "ça sera vous docteur ?"
+        intervals [39]:
+            xmin = 209690.0
+            xmax = 228515.0
+            text = ""
+        intervals [40]:
+            xmin = 228515.0
+            xmax = 230427.0
+            text = "je vais rester encore longtemps ici ?"
+        intervals [41]:
+            xmin = 230427.0
+            xmax = 241471.0
+            text = ""
+        intervals [42]:
+            xmin = 241471.0
+            xmax = 244004.0
+            text = "et après l'opération ?"
+        intervals [43]:
+            xmin = 244004.0
+            xmax = 251527.0
+            text = ""
+        intervals [44]:
+            xmin = 251527.0
+            xmax = 251995.0
+            text = ""
+        intervals [45]:
+            xmin = 251995.0
+            xmax = 253287.0
+            text = ""
+        intervals [46]:
+            xmin = 253287.0
+            xmax = 255376.0
+            text = "oui docteur"
+        intervals [47]:
+            xmin = 255376.0
+            xmax = 262669.0
+            text = ""
+        intervals [48]:
+            xmin = 262669.0
+            xmax = 263766.0
+            text = "oui docteur"
+        intervals [49]:
+            xmin = 263766.0
+            xmax = 270411.0
+            text = ""
+        intervals [50]:
+            xmin = 270411.0
+            xmax = 270903.0
+            text = ""
+        intervals [51]:
+            xmin = 270903.0
+            xmax = 271286.0
+            text = "non"
+        intervals [52]:
+            xmin = 271286.0
+            xmax = 275839.0
+            text = ""
+        intervals [53]:
+            xmin = 275839.0
+            xmax = 276967.0
+            text = "au revoir docteur"
