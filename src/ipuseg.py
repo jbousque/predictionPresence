@@ -5,14 +5,16 @@ import numpy as np
 from pydub import AudioSegment
 from wavSplitter import splitInThree
 import config
+import logging
 
 sp_globPath = config.SPPAS_SRC_PATH
 sys.path.append(sp_globPath)
 from annotations.IPUs.ipusseg import sppasIPUs
 
-
+logger = logging.getLogger(__name__)
 
 def convertToMono(audioFileLoc, audioFileName):
+	logger.debug('convertToMono(audioFileLoc=%s, audioFileName=%s)', audioFileLoc, audioFileName)
 	audioFile = os.path.join(audioFileLoc, audioFileName)
 	fileName, fileExt = os.path.splitext(audioFileName)
 
@@ -20,10 +22,12 @@ def convertToMono(audioFileLoc, audioFileName):
 	mono = stereo.set_channels(1)
 
 	monoFileName = os.path.join(audioFileLoc, fileName + "_mono" + fileExt)
-	monoFile = mono.export(monoFileName, format="wav")
+	mono.export(monoFileName, format="wav")
+	logger.debug('convertToMono returns %s', monoFileName)
 	return monoFileName
 
 def avgIPU_length(audioFileLoc, audioFileName):
+	logger.debug('avgIPU_length(audioFileLoc=%s, audioFileName=%s)', audioFileLoc, audioFileName)
 
 	f = convertToMono(audioFileLoc, audioFileName)
 	#f = os.path.join(audioFileLoc, audioFileName)
@@ -46,11 +50,13 @@ def avgIPU_length(audioFileLoc, audioFileName):
 	print(summary)
 
 	IPU_lengths = summary[1] - summary[0]
+	logger.debug('avgIPU_length returns %d', IPU_lengths)
 	return IPU_lengths.mean()
 
 
 def IPUdriver(audioFilePath, splitUp):
-	splitInThree(audioFilePath,splitUp)
+	logger.debug('IPUdriver(audioFilePath=%s, splitUp=%s)', audioFilePath, str(splitUp))
+	splitInThree(audioFilePath, splitUp)
 
 	#print os.path.join(os.path.dirname(audioFilePath), "IPUtemp")
 	avg_begin = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "begin.wav")
@@ -61,6 +67,7 @@ def IPUdriver(audioFilePath, splitUp):
 
 	print(avgIPUarr)
 	print(avgIPUarr[0], avgIPUarr[1], avgIPUarr[2])
+	logger.debug('IPUdriver returns %s', str(avgIPUarr))
 	return avgIPUarr
 
 #compute standard deviation

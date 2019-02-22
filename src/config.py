@@ -16,6 +16,8 @@ PREV_CORPUS_PATH = os.path.join(ROOT_PATH, 'data', 'CorpusHMPassation') # gregCo
 
 # all produced files shall go here
 OUT_PATH = os.path.join(ROOT_PATH, '_output')
+LOG_PATH = os.path.join(OUT_PATH, 'logs')
+TMP_PATH = os.path.join(ROOT_PATH, 'tmp')
 
 # Tools
 
@@ -50,13 +52,13 @@ NO_PHASE_SPLIT = [0, 1, 0]
 
 CURDATE = datetime.now().strftime("%Y-%m%d_%H-%M-%S")
 
-LOGFILE = os.path.join(ROOT_PATH, 'predpres-'+CURDATE+'.log')
+LOGFILE = os.path.join(LOG_PATH, 'predpres-'+CURDATE+'.log')
 
-FEATURES_MATRIX = "matrix-" + CURDATE + ".xlsx"
+FEATURES_MATRIX = "matrix-" + CURDATE
 
-STATS_MATRIX = "stats-"+CURDATE+".xlsx"
-STATS_PRESENCE_MATRIX = "statsPres-"+CURDATE+".xlsx"
-STATS_COPRESENCE_MATRIX = "statsCopres-"+CURDATE+".xlsx"
+STATS_MATRIX = "stats-"+CURDATE
+STATS_PRESENCE_MATRIX = "statsPres-"+CURDATE
+STATS_COPRESENCE_MATRIX = "statsCopres-"+CURDATE
 
 
 seed = 12
