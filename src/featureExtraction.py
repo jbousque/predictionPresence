@@ -25,10 +25,7 @@ logger = logging.getLogger(__name__)
 gregCorpusPath = config.PREV_CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
 profBCorpusPath = config.CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/Data"
 
-# if not None, only samples listed will be taken into account
-filter_samples = ['E6F']
-
-def filePaths():
+def filePaths(filter_samples=None):
     # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
 
     outerArr = []
@@ -36,7 +33,7 @@ def filePaths():
     for subdir in os.listdir(gregCorpusPath):
         # print subdir
         if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
-                and (filter_samples is not None and any(subdir == filt for filt in filter_samples)):
+                and (filter_samples is None or any(subdir == filt for filt in filter_samples)):
             for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
                 # print envDir
                 innerArr = []
@@ -74,7 +71,7 @@ def filePaths():
                     outerArr.append(innerArr)
     return outerArr
 
-def filePaths_agent():
+def filePaths_agent(filter_samples=None):
     # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
 
     outerArr = []
@@ -83,7 +80,7 @@ def filePaths_agent():
     for root, dirs, files in os.walk(agent_path):
         logger.debug('filePaths_agent: considering %s', root)
         subject, mode = extract_info(root)
-        if filter_samples is not None and any(subject == filt for filt in filter_samples):
+        if filter_samples is None or any(subject == filt for filt in filter_samples):
             #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
             #if m is None:
             m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)$', root)
