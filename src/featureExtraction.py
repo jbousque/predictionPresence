@@ -26,17 +26,15 @@ gregCorpusPath = config.PREV_CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Da
 profBCorpusPath = config.CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/Data"
 
 # if not None, only samples listed will be taken into account
-filter_samples = ['E7A']
+filter_samples = ['E6F']
 
 def filePaths():
     # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
 
     outerArr = []
+    logger.info('filePaths: filter_samples %s', filter_samples)
     for subdir in os.listdir(gregCorpusPath):
         # print subdir
-        logger.debug("subdir %s", subdir)
-        logger.debug("filter_samples is not None %s", str(filter_samples is not None))
-        logger.debug("any(filt in subdir for filt in filter_samples)) %s", str(any(filt in subdir for filt in filter_samples)))
         if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
                 and (filter_samples is not None and any(subdir == filt for filt in filter_samples)):
             for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
@@ -81,31 +79,33 @@ def filePaths_agent():
 
     outerArr = []
     agent_path = os.path.join(config.TMP_PATH)
+    logger.info('filePaths_agent: filter_samples %s', filter_samples)
     for root, dirs, files in os.walk(agent_path):
-        logger.debug('filePaths_agent: treating %s', root)
+        logger.debug('filePaths_agent: considering %s', root)
         subject, mode = extract_info(root)
-        #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
-        #if m is None:
-        m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)$', root)
-        if m is not None:
-            mode = m.group(2)
-            subject = m.group(1)
-            logger.debug('filePaths_agent: treating %s / %s', subject, mode)
-            innerArr = []
+        if filter_samples is not None and any(subject == filt for filt in filter_samples):
+            #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
+            #if m is None:
+            m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)$', root)
+            if m is not None:
+                mode = m.group(2)
+                subject = m.group(1)
+                logger.debug('filePaths_agent: treating %s / %s', subject, mode)
+                innerArr = []
 
-            innerArr.append(os.path.join(root, 'agent.xra'))
-            innerArr.append(os.path.join(root, 'agent_sound.wav'))
+                innerArr.append(os.path.join(root, 'agent.xra'))
+                innerArr.append(os.path.join(root, 'agent_sound.wav'))
 
-            corpus_path = os.path.join(config.CORPUS_PATH, subject, mode, 'Unity')
-            logger.debug('filePaths_agent: looking for out_record under %s', corpus_path)
-            if os.path.exists(corpus_path):
-                for file in os.listdir(corpus_path):
-                    name, exten = os.path.splitext(file)
-                    if exten == ".txt":
-                        # print os.path.join(dirs, file)
-                        innerArr.append(os.path.join(corpus_path, file))
-                        outerArr.append(innerArr)
-            else: logger.warn('filePaths_agent: path does not exist %s', corpus_path)
+                corpus_path = os.path.join(config.CORPUS_PATH, subject, mode, 'Unity')
+                logger.debug('filePaths_agent: looking for out_record under %s', corpus_path)
+                if os.path.exists(corpus_path):
+                    for file in os.listdir(corpus_path):
+                        name, exten = os.path.splitext(file)
+                        if exten == ".txt":
+                            # print os.path.join(dirs, file)
+                            innerArr.append(os.path.join(corpus_path, file))
+                            outerArr.append(innerArr)
+                else: logger.warn('filePaths_agent: path does not exist %s', corpus_path)
 
     logger.debug('filePaths_agent returns %s', str(outerArr))
 
@@ -877,10 +877,10 @@ def copresenceModels(dataFile):
 
 def computeFeatures(pathsList, splitratios, isSubject=True):
     # Function to call all functions to compute features
-    #computePOStags(pathsList, splitratios, isSubject)
-    #computeSentenceLengths(pathsList, splitratios, isSubject)
-    #computeEntropies(pathsList, splitratios, isSubject)
-    #removeNaN(splitratios, isSubject)
+    computePOStags(pathsList, splitratios, isSubject)
+    computeSentenceLengths(pathsList, splitratios, isSubject)
+    computeEntropies(pathsList, splitratios, isSubject)
+    removeNaN(splitratios, isSubject)
     computeIPUlengths(pathsList, splitratios, isSubject)
 
 
