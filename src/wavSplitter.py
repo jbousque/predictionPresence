@@ -5,9 +5,6 @@ import sys
 from pydub import AudioSegment
 import config
 
-pyAudioAnalysisPath = config.PYAA_SRC_PATH
-sys.path.append(pyAudioAnalysisPath)
-import convertToWav
 
 def trimEnd(origFile, threshold, chunk_size):		#chunk_size is in milliseconds
     segment = AudioSegment.from_file(origFile)												#alternatively, to find duration of the audio file, use the ffprobe command : "ffprobe -i SilenceRemoved.wav -show_entries format=duration -v quiet -of csv="p=0""
