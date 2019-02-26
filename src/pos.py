@@ -156,7 +156,8 @@ def avgSentenceLength(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 				SPPAS version
 	#Output :	3-element numpy array containing average sentence lengths of each phase
 	"""
-	logger.info('avgSentenceLength(transcriptionFile=%s, wavFile=%s, splitUp=%s, sppaspath=%s, sppasver=%s)', transcriptionFile, wavFile, sppaspath, sppasver)
+	logger.info('avgSentenceLength(transcriptionFile=%s, wavFile=%s, splitUp=%s, sppaspath=%s, sppasver=%s)',
+				transcriptionFile, wavFile, splitUp, sppaspath, sppasver)
 	segment = AudioSegment.from_file(wavFile)												
 	duration = segment.duration_seconds
 
