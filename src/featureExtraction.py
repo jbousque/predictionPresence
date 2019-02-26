@@ -1094,6 +1094,9 @@ def main(argv):
     #                    help="'presence' or 'copresence' to perform related learning - no learning is performed if missing")
     parser.add_argument('-f', default=None)
 
+    if not os.path.exists(config.LOG_PATH): os.makedirs(config.LOG_PATH)
+    if not os.path.exists(config.OUT_PATH): os.makedirs(config.OUT_PATH)
+
     print("Logging to " + config.LOGFILE)
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
