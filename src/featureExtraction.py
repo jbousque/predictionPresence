@@ -1095,7 +1095,7 @@ def main(argv):
     parser.add_argument('-f', default=None)
 
     if not os.path.exists(config.LOG_PATH): os.makedirs(config.LOG_PATH)
-    if not os.path.exists(config.OUT_PATH): os.makedirs(config.OUT_PATH)
+    if not os.path.exists(config.TMP_PATH): os.makedirs(config.TMP_PATH)
 
     print("Logging to " + config.LOGFILE)
     for handler in logging.root.handlers[:]:
