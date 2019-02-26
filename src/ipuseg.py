@@ -50,7 +50,7 @@ def avgIPU_length(audioFileLoc, audioFileName):
 	print(summary)
 
 	IPU_lengths = summary[1] - summary[0]
-	logger.debug('avgIPU_length returns %d', IPU_lengths)
+	logger.debug('avgIPU_length returns %s', str(IPU_lengths))
 	return IPU_lengths.mean()
 
 

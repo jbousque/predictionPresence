@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 gregCorpusPath = config.PREV_CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
 profBCorpusPath = config.CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/Data"
 
+# if not None, only samples listed will be taken into account
+filter_samples = ['E7A']
 
 def filePaths():
     # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
@@ -32,13 +34,17 @@ def filePaths():
     outerArr = []
     for subdir in os.listdir(gregCorpusPath):
         # print subdir
-        if (os.path.isdir(os.path.join(gregCorpusPath, subdir))):
+        logger.debug("subdir %s", subdir)
+        logger.debug("filter_samples is not None %s", str(filter_samples is not None))
+        logger.debug("any(filt in subdir for filt in filter_samples)) %s", str(any(filt in subdir for filt in filter_samples)))
+        if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
+                and (filter_samples is not None and any(filt in subdir for filt in filter_samples)):
             for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
                 # print envDir
                 innerArr = []
                 foundWav = False
-                if (os.path.isdir(os.path.join(gregCorpusPath, subdir, envDir))) and (
-                os.path.isdir(os.path.join(profBCorpusPath, subdir, envDir))):
+                if os.path.isdir(os.path.join(gregCorpusPath, subdir, envDir)) and \
+                        os.path.isdir(os.path.join(profBCorpusPath, subdir, envDir)):
                     # print os.path.join(subdir, envDir)
                     for dirs, subdirs, files in os.walk(os.path.join(gregCorpusPath, subdir, envDir), topdown=True,
                                                         onerror=None, followlinks=False):
@@ -105,7 +111,25 @@ def filePaths_agent():
 
     return outerArr
 
-def computePOStags(pathsList, splitratios, features=''):
+def getFeaturesetFolderName(isSubject, phasesSplit):
+    """
+    Formats and returns name of feature folder for given featureset.
+    :param isSubject: True if medic, False if agent (greta)
+    :param phasesSplit: split ratios for phases, or None.
+    :return: formatted folder name for featureset.
+    """
+    #logger.debug('getFeaturesetFolderName(isSubject=%s, phasesSplit=%s)', isSubject, phasesSplit)
+    featuresetName = 'Features'
+    if not isSubject:
+        featuresetName += '-agent'
+    if phasesSplit is None:
+        featuresetName += '-nophase'
+    else:
+        featuresetName += '-%d%d%d' % ( phasesSplit[0]*100, phasesSplit[1]*100, phasesSplit[2]*100 )
+    #logger.debug('getFeaturesetFolderName returns %s', featuresetName)
+    return featuresetName
+
+def computePOStags(pathsList, splitratios, isSubject = True):
     crashlist = ["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
                  "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra", "E02B-02-Cave-micro.E2B-latin1.xra",
                  "N06F-05-PC-micro.E1-5.xra", "N06F-01-PC-micro.E1-5.xra", "N06F-04-Casque-micro.E1-5.xra",
@@ -123,20 +147,18 @@ def computePOStags(pathsList, splitratios, features=''):
                         # print path, wavPath
                         try:
                             POSfreqArr = POSfeatures(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
+                            candidate, envType = extract_info(path)
+                            logger.debug('computePOStags: profBCorpusPat%s, candidate=%s, envType=%s, getFeaturesetFolderName(isSubject, splitratios)=%s',
+                                         profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios))
+                            dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
+                            # make sure 'Features' path exists
+                            if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
+                            np.savetxt(dest, POSfreqArr)
                         except Exception:
-                            logger.exception("computePOStags() failed for %s", wavPath)
-                        #envType = os.path.basename(
-                        #    os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
-                        #candidate = os.path.basename(
-                        #    os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))))
-                        candidate, envType = extract_info(path)
-                        dest = os.path.join(profBCorpusPath, candidate, envType, "Features"+features, "pos.txt")
-                        # make sure 'Features' path exists
-                        if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
-                        np.savetxt(dest, POSfreqArr)
+                            logger.exception("computePOStags: failed for %s", wavPath)
 
 
-def computeSentenceLengths(pathsList, splitratios, features=''):
+def computeSentenceLengths(pathsList, splitratios, isSubject = True):
     # code cleanup: computeSentenceLengths and computePOStags do redundant work. Could be improved
     crashlist = ["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
                  "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra", "E02B-02-Cave-micro.E2B-latin1.xra",
@@ -155,18 +177,14 @@ def computeSentenceLengths(pathsList, splitratios, features=''):
                         # print path, wavPath
                         try:
                             sentenceLengthArray = avgSentenceLength(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
+                            candidate, envType = extract_info(path)
+                            dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "slength.txt")
+                            np.savetxt(dest, sentenceLengthArray)
                         except Exception:
                             logger.exception("computeSentenceLengths() failed for %s", wavPath)
-                        #envType = os.path.basename(
-                        #    os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
-                        #candidate = os.path.basename(
-                        #    os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))))
-                        candidate, envType = extract_info(path)
-                        dest = os.path.join(profBCorpusPath, candidate, envType, "Features"+features, "slength.txt")
-                        np.savetxt(dest, sentenceLengthArray)
 
 
-def computeEntropies(pathsList, splitratios, features=''):
+def computeEntropies(pathsList, splitratios, isSubject=True):
     # the function computes entropies for all unity files, replacing nan for non-working trackers
     for paths in pathsList:
         for path in paths:
@@ -181,14 +199,14 @@ def computeEntropies(pathsList, splitratios, features=''):
                 logger.debug("computeEntropies: candidate " + candidate)
                 try:
                     entArr = videoEntropyMatrix(path, splitratios)
+                    dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "entropy.txt")
+                    if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
+                    np.savetxt(dest, entArr)
                 except Exception:
                     logger.exception("computeEntropies() failed for %s / %s", envType, candidate)
-                dest = os.path.join(profBCorpusPath, candidate, envType, "Features"+features, "entropy.txt")
-                if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
-                np.savetxt(dest, entArr)
 
 
-def computeIPUlengths(pathsList, splitratios, features=''):
+def computeIPUlengths(pathsList, splitratios, isSubject=True):
     crashlist = ["N21C-03-PC-micro.wav", 'IPUtemp']
     for paths in pathsList:
         for path in paths:
@@ -199,12 +217,12 @@ def computeIPUlengths(pathsList, splitratios, features=''):
                 candidate, envType = extract_info(path)
                 try:
                     entArr = IPUdriver(path, splitratios)
+                    dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "ipu.txt")
+                    if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
+                    logger.debug("computeIPUlengths: saving %s", dest)
+                    np.savetxt(dest, entArr)
                 except Exception:
                     logger.exception("computeIPUlengths() failed for %s / %s / %s", envType, candidate, path)
-                dest = os.path.join(profBCorpusPath, candidate, envType, "Features"+features, "ipu.txt")
-                if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
-                logger.debug("computeIPUlengths: saving %s", dest)
-                np.savetxt(dest, entArr)
 
 
 def sum_nan_arrays(a, b):
@@ -223,7 +241,7 @@ def updateFrequencies(current, newArr):
     return current
 
 
-def removeNaN(features=''):
+def removeNaN(splitratios, isSubject = True):
     # the following function replaces the nan values in the entropy matrices with average values
     sums = np.zeros((15, 3))  # this array eventually contains the sums of the values of the valid entries of each feature
     currentFreq = np.zeros((15, 3))  # supporting array to count the number of valid entries for each feature
@@ -232,9 +250,9 @@ def removeNaN(features=''):
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None,
                                         followlinks=False):  # this loop computes the sums and currentFreq arrays
         for file in files:
-            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == "Features"+features:
+            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios):
                 completePath = os.path.join(dirs, file)
-                sums = sum_nan_arrays(averages, np.loadtxt(completePath))
+                sums = sum_nan_arrays(sums, np.loadtxt(completePath))
                 currentFreq = updateFrequencies(currentFreq, np.loadtxt(completePath))
                 count += 1
 
@@ -243,7 +261,7 @@ def removeNaN(features=''):
 
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         for file in files:
-            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == "Features"+features:
+            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios):
                 completePath = os.path.join(dirs, file)
                 origMat = np.loadtxt(completePath)
                 ma = np.isnan(origMat)
@@ -264,12 +282,15 @@ def extractClass(dframe, candidate, env):
                 logger.debug("extractClass returns %s", (dframe["Value"][i], 1))
                 return dframe["Value"][i], 1
             elif (dframe["Value"][i] >= 2.5 and dframe["Value"][i] < 3.5):
+                logger.debug("extractClass returns %s", (dframe["Value"][i], 2))
                 return dframe["Value"][i], 2
             else:
+                logger.debug("extractClass returns %s", (dframe["Value"][i], 3))
                 return dframe["Value"][i], 3
+    logger.warn("extractClass: class not found in dataframe")
 
 
-def movePOSfiles(pathsList):
+def movePOSfiles(pathsList, splitratios, isSubject=True):
     # following copies pos txt files to the features folder, which were generated in the asr-trans folder, to the Features folder
     for files in pathsList:
         for file in files:
@@ -281,18 +302,18 @@ def movePOSfiles(pathsList):
                         os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(posFile)))))
                     candidate = os.path.basename(
                         os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(posFile))))))
-                    dest = os.path.join(profBCorpusPath, candidate, envType, "Features", "pos.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
                     shutil.copy(posFile, dest)
 
 
-def moveIPUfiles():
+def moveIPUfiles(splitratios, isSubject = True):
     for dirs, subdirs, files in os.walk(gregCorpusPath, topdown=True, onerror=None, followlinks=False):
-        if (os.path.basename(os.path.normpath(dirs)) == "Features" and os.path.isfile(os.path.join(dirs, 'ipu.txt'))):
+        if (os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios) and os.path.isfile(os.path.join(dirs, 'ipu.txt'))):
             envType = os.path.basename(
                 os.path.normpath(os.path.dirname(os.path.dirname(os.path.join(dirs, 'ipu.txt')))))
             candidate = os.path.basename(
                 os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.join(dirs, 'ipu.txt'))))))
-            target = os.path.join(profBCorpusPath, candidate, envType, "Features")
+            target = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios))
             if os.path.exists(target):
                 shutil.copy(os.path.join(dirs, "ipu.txt"), target)
 
@@ -308,8 +329,8 @@ def compressEntropy(entMat):
     return compressed
 
 
-def prepareMatrix(features=''):
-    logger.info("prepareMatrix(features=%s)", features)
+def prepareMatrix(splitratios, isSubject=True):
+    logger.info("prepareMatrix(isSubject=%s, splitratios=%s)", isSubject, splitratios)
     # This function was used to traverse the corpus (specifically, the folders where the extracted features are stored) and prepare a feature matrix.
     featureMat = []
 
@@ -322,17 +343,25 @@ def prepareMatrix(features=''):
     pScoreVec = []
     copClassVec = []
     copScoreVec = []
+    logger.debug('prepareMatrix: retrieving features from folders "%s"', getFeaturesetFolderName(isSubject, splitratios))
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         try:
-            if (os.path.basename(os.path.normpath(dirs)) == "Features"+features):
+            if (os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios)):
                 logger.debug('prepareMatrix: treating path ' + dirs)
                 entropyFile = os.path.join(dirs, "usableEntropies.txt")
                 posFile = os.path.join(dirs, "pos.txt")
                 slengthFile = os.path.join(dirs, "slength.txt")
                 ipuFile = os.path.join(dirs, "ipu.txt")
 
-                if (os.path.isfile(entropyFile) and os.path.isfile(posFile) and os.path.isfile(
-                        slengthFile) and os.path.isfile(ipuFile)):
+                if not os.path.isfile(entropyFile):
+                    logger.warn('prepareMatrix: missing entropy file %s', entropyFile)
+                elif not os.path.isfile(posFile):
+                    logger.warn('prepareMatrix: missing parts of speech file %s', posFile)
+                elif not os.path.isfile(slengthFile):
+                    logger.warn('prepareMatrix: missing sentence lengths file %s', slengthFile)
+                elif not os.path.isfile(ipuFile):
+                    logger.warn('prepareMatrix: missing IPUs file %s', ipuFile)
+                else:
                     # print "in condition"
                     expert = 1
                     envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(posFile))))
@@ -353,13 +382,16 @@ def prepareMatrix(features=''):
                     if (extractClass(labelsCo, candidate, envType)) is None:
                         continue
 
-                    audioTarget = os.path.join(gregCorpusPath, candidate, envType, "data")
+                    if isSubject:
+                        audioTarget = os.path.join(gregCorpusPath, candidate, envType, "data")
+                    else:
+                        audioTarget = os.path.join(config.TMP_PATH, candidate, envType)
                     logger.debug("prepareMatrix: searching wavs under %s", audioTarget)
                     found = glob.glob(os.path.join(audioTarget, '*.wav'))
                     #for file in os.listdir(audioTarget):
                         # print file, "here"
                         #if (file.endswith(".wav")):
-                    if len(found) == 0:
+                    if len(found) == 0 and isSubject:
                         # try in alternate directory
                         logger.debug("prepareMatrix: searching wavs under %s",
                                      os.path.join(profBCorpusPath, candidate, envType, 'Superviseur', 'session*', '*.wav'))
@@ -453,7 +485,11 @@ def prepareMatrix(features=''):
     mat = np.hstack((featureMat, rat1Vec, rat2Vec, classes))
     logger.debug('prepareMatrix: mat shape %s', str(mat.shape))
     pdDump = pd.DataFrame(mat)
-    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX + features + '.xlsx')
+    dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX
+                            + getFeaturesetFolderName(isSubject, splitratios) + '.xlsx')
+
+
+
     pdDump.columns = ['Head_Entropy_Start', 'Head_Entropy_Mid', 'Head_Entropy_End', 'LeftWrist_Entropy_Start',
                       'LeftWrist_Entropy_Mid', 'LeftWrist_Entropy_End', 'RightWrist_Entropy_Start',
                       'RightWrist_Entropy_Mid', 'RightWrist_Entropy_End', 'LeftElbow_Entropy_Start',
@@ -469,10 +505,33 @@ def prepareMatrix(features=''):
                       'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Ratio1_Begin', 'Ratio1_Mid',
                       'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score',
                       'Presence Class', 'Co-presence Score', 'Co-presence Class']
-
+    # compute average entropies columns
+    pdDump['Avg_HandEntropy_Begin'] = pdDump[['LeftWrist_Entropy_Start', 'RightWrist_Entropy_Start',
+                                             'LeftElbow_Entropy_Start', 'RightElbow_Entropy_Start']].mean(axis=1)
+    pdDump['Avg_HandEntropy_Mid'] = pdDump[['LeftWrist_Entropy_Mid', 'RightWrist_Entropy_Mid', 'LeftElbow_Entropy_Mid',
+                                           'RightElbow_Entropy_Mid']].mean(axis=1)
+    pdDump['Avg_HandEntropy_End'] = pdDump[['LeftWrist_Entropy_End', 'RightWrist_Entropy_End', 'LeftElbow_Entropy_End',
+                                           'RightElbow_Entropy_End']].mean(axis=1)
+    pdDump = pdDump[['Head_Entropy_Start', 'Head_Entropy_Mid', 'Head_Entropy_End', 'LeftWrist_Entropy_Start',
+                      'LeftWrist_Entropy_Mid', 'LeftWrist_Entropy_End', 'RightWrist_Entropy_Start',
+                      'RightWrist_Entropy_Mid', 'RightWrist_Entropy_End', 'LeftElbow_Entropy_Start',
+                      'LeftElbow_Entropy_Mid', 'LeftElbow_Entropy_End', 'RightElbow_Entropy_Start',
+                      'RightElbow_Entropy_Mid', 'RightElbow_Entropy_End', 'Avg_HandEntropy_Begin',
+                      'Avg_HandEntropy_Mid', 'Avg_HandEntropy_End', 'Freq_Adjective_Begin', 'Freq_Adjective_Mid',
+                      'Freq_Adjective_End', 'Freq_Adverb_Begin', 'Freq_Adverb_Mid', 'Freq_Adverb_End',
+                      'Freq_Auxiliary_Begin', 'Freq_Auxiliary_Mid', 'Freq_Auxiliary_End', 'Freq_Conjunction_Begin',
+                      'Freq_Conjunction_Mid', 'Freq_Conjunction_End', 'Freq_Determiner_Begin', 'Freq_Determiner_Mid',
+                      'Freq_Determiner_End', 'Freq_Noun_Begin', 'Freq_Noun_Mid', 'Freq_Noun_End',
+                      'Freq_Preposition_Begin', 'Freq_Preposition_Mid', 'Freq_Preposition_End', 'Freq_Pronoun_Begin',
+                      'Freq_Pronoun_Mid', 'Freq_Pronoun_End', 'Freq_Verb_Begin', 'Freq_Verb_Mid', 'Freq_Verb_End',
+                      'Avg_SentenceLength_Begin', 'Avg_SentenceLength_Mid', 'Avg_SentenceLength_End',
+                      'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Ratio1_Begin', 'Ratio1_Mid',
+                      'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score',
+                      'Presence Class', 'Co-presence Score', 'Co-presence Class']]
     pdDump.insert(0, 'Candidate', candidateVec)
     pdDump.insert(1, 'Environment', envVec)
     pdDump.insert(2, 'Expert', expertVec)
+
     pdDump.to_excel(dumpPath, index=False)
     logger.info("prepareMatrix: Saved matrix to %s", dumpPath)
     return mat
@@ -816,13 +875,13 @@ def copresenceModels(dataFile):
     pdDump.to_excel(dumpPath, index=False)
 
 
-def computeFeatures(pathsList, splitratios, features=''):
+def computeFeatures(pathsList, splitratios, isSubject=True):
     # Function to call all functions to compute features
-    #computePOStags(pathsList, splitratios, features)
-    #computeSentenceLengths(pathsList, splitratios, features)
-    #computeEntropies(pathsList, splitratios, features)
-    removeNaN(features)
-    computeIPUlengths(pathsList, splitratios, features)
+    #computePOStags(pathsList, splitratios, isSubject)
+    #computeSentenceLengths(pathsList, splitratios, isSubject)
+    #computeEntropies(pathsList, splitratios, isSubject)
+    #removeNaN(splitratios, isSubject)
+    computeIPUlengths(pathsList, splitratios, isSubject)
 
 
 def computeAveragedMatrix(dataFile, outputFile):
@@ -1016,9 +1075,9 @@ def preprocess_agent_data():
 def extract_info(path):
     mode = None
     subject = None
-    m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', path)
+    m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', path)
     if m is None:
-        m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)$', path)
+        m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)$', path)
     if m is not None:
         mode = m.group(2)
         subject = m.group(1)
@@ -1048,15 +1107,17 @@ def main(argv):
     logger.debug("Arguments parsed {args}".format(args=args))
 
     #preprocess_agent_data()
-    pathsList = filePaths_agent()
+    pathsList = filePaths()
     logger.debug("pathsList: " + str(pathsList))
-    splitratios = args.splits
 
+    isSubject = True
+    splitratios = args.splits
+    logger.info('main: treating featureset "%s"', getFeaturesetFolderName(isSubject, splitratios))
 
     #pathsList = filePaths_agent()
 
-    #computeFeatures(pathsList, splitratios, '-agent')
-    prepareMatrix('-agent')
+    computeFeatures(pathsList, splitratios)
+    prepareMatrix(splitratios, True)
 
     #randomForest(os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX), args.obj)  # todo path
 
