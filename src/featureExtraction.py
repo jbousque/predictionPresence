@@ -38,7 +38,7 @@ def filePaths():
         logger.debug("filter_samples is not None %s", str(filter_samples is not None))
         logger.debug("any(filt in subdir for filt in filter_samples)) %s", str(any(filt in subdir for filt in filter_samples)))
         if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
-                and (filter_samples is not None and any(filt in subdir for filt in filter_samples)):
+                and (filter_samples is not None and any(subdir == filt for filt in filter_samples)):
             for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
                 # print envDir
                 innerArr = []
