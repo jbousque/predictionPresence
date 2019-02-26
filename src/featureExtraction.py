@@ -83,7 +83,7 @@ def filePaths_agent(filter_samples=None):
         if filter_samples is None or any(subject == filt for filt in filter_samples):
             #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
             #if m is None:
-            m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)$', root)
+            m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)$', root)
             if m is not None:
                 mode = m.group(2)
                 subject = m.group(1)
@@ -932,7 +932,7 @@ def preprocess_agent_data():
                     #inner_arr['rec'] = os.path.join(root, file)
                     out_rec = os.path.join(root, file)
                     logger.debug("preprocess_agent_data:    found out_record %s", out_rec)
-                    m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', out_rec)
+                    m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', out_rec)
                     if m is not None:
                         mode = m.group(2)
                         subject = m.group(1)
@@ -951,7 +951,7 @@ def preprocess_agent_data():
                     #inner_arr['chat'] = os.path.join(root, file)
                     chat_xml = os.path.join(root, file)
                     logger.debug("preprocess_agent_data:    found agent chat %s", chat_xml)
-                    m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', chat_xml)
+                    m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', chat_xml)
                     if m is not None:
                         mode = m.group(2)
                         subject = m.group(1)
@@ -1085,6 +1085,7 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--splits", nargs='+', type=float, required=False, default=config.DEFAULT_PHASE_SPLIT,
                         help="list of 3 phases ratio, summing to 1")
+    parser.add_argument("--agent", help="Whether to compute subject or agent features", action='store_true')
     #parser.add_argument("--matrix", help="Whether to compute features matrix or not", action='store_true')
     #parser.add_argument("--features", help="Whether to compute features or not", action='store_true')
     #parser.add_argument("-o", "--obj", type=str, required=False, default=None,
@@ -1106,18 +1107,23 @@ def main(argv):
     args = parser.parse_args()
     logger.debug("Arguments parsed {args}".format(args=args))
 
-    #preprocess_agent_data()
-    pathsList = filePaths()
+    isSubject = not(args.agent)
+    logger.debug("isSubject ? %s", isSubject)
+
+    if isSubject:
+        pathsList = filePaths()
+    else:
+        preprocess_agent_data()
+        pathsList = filePaths_agent()
     logger.debug("pathsList: " + str(pathsList))
 
-    isSubject = True
     splitratios = args.splits
     logger.info('main: treating featureset "%s"', getFeaturesetFolderName(isSubject, splitratios))
 
     #pathsList = filePaths_agent()
 
-    computeFeatures(pathsList, splitratios)
-    prepareMatrix(splitratios, True)
+    computeFeatures(pathsList, splitratios, isSubject)
+    prepareMatrix(splitratios, isSubject)
 
     #randomForest(os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX), args.obj)  # todo path
 
