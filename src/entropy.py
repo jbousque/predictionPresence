@@ -2,7 +2,9 @@ import numpy as np
 from scipy.spatial import ConvexHull
 from collections import defaultdict
 import scipy
+import logging
 
+logger = logging.getLogger(__name__)
 
 def coordArray(coordFile):
     coordArr = np.loadtxt(coordFile, skiprows=1)
@@ -169,17 +171,18 @@ def videoEntropyMatrix(fileName, splitRatios):
 
     if splitArr[0].size > 0:
         completeEntropyMatrix = segmentEntropyMatrix(splitArr[0])
+    else:
+        completeEntropyMatrix = np.zeros((15))
 
     if splitArr[1].size > 0:
-        if completeEntropyMatrix.size > 0:
-            completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[1])])
-        else:
-            completeEntropyMatrix = segmentEntropyMatrix(splitArr[1])
+        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[1])])
+    else:
+        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, np.zeros((15))])
+
     if splitArr[2].size > 0:
-        if completeEntropyMatrix.size > 0:
-            completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[2])])
-        else:
-            completeEntropyMatrix = segmentEntropyMatrix(splitArr[2])
+        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[2])])
+    else:
+        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, np.zeros((15))])
 
     print(completeEntropyMatrix)
     print(completeEntropyMatrix.shape)

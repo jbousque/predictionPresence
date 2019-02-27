@@ -31,7 +31,6 @@ def filePaths(filter_samples=None):
     outerArr = []
     logger.info('filePaths: filter_samples %s', filter_samples)
     for subdir in os.listdir(gregCorpusPath):
-        # print subdir
         if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
                 and (filter_samples is None or any(subdir == filt for filt in filter_samples)):
             for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
@@ -119,7 +118,7 @@ def getFeaturesetFolderName(isSubject, phasesSplit):
     featuresetName = 'Features'
     if not isSubject:
         featuresetName += '-agent'
-    if phasesSplit is None:
+    if phasesSplit is None or (phasesSplit[0] == 0 and phasesSplit[2] == 0):
         featuresetName += '-nophase'
     else:
         featuresetName += '-%d%d%d' % ( phasesSplit[0]*100, phasesSplit[1]*100, phasesSplit[2]*100 )
@@ -228,6 +227,20 @@ def sum_nan_arrays(a, b):
     mb = np.isnan(b)
     return np.where(ma & mb, np.NaN, np.where(ma, 0, a) + np.where(mb, 0, b))
 
+"""
+Traceback (most recent call last):
+  File "featureExtraction.py", line 1133, in <module>
+    main(sys.argv)
+  File "featureExtraction.py", line 1124, in main
+    computeFeatures(pathsList, splitratios, isSubject)
+  File "featureExtraction.py", line 879, in computeFeatures
+    removeNaN(splitratios, isSubject)
+  File "featureExtraction.py", line 251, in removeNaN
+    sums = sum_nan_arrays(sums, np.loadtxt(completePath))
+  File "featureExtraction.py", line 228, in sum_nan_arrays
+    return np.where(ma & mb, np.NaN, np.where(ma, 0, a) + np.where(mb, 0, b))
+ValueError: operands could not be broadcast together with shapes (15,3) (15,)
+"""
 
 def updateFrequencies(current, newArr):
     # not an optimal solution, attempt improvement
@@ -1111,7 +1124,7 @@ def main(argv):
     logger.debug("isSubject ? %s", isSubject)
 
     if isSubject:
-        pathsList = filePaths()
+        pathsList = filePaths(['N10D'])
     else:
         preprocess_agent_data()
         pathsList = filePaths_agent()
