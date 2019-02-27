@@ -59,9 +59,18 @@ def IPUdriver(audioFilePath, splitUp):
 	splitInThree(audioFilePath, splitUp)
 
 	#print os.path.join(os.path.dirname(audioFilePath), "IPUtemp")
-	avg_begin = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "begin.wav")
-	avg_mid = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "middle.wav")
-	avg_end = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "end.wav")
+	if splitUp[0] > 0:
+		avg_begin = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "begin.wav")
+	else:
+		avg_begin = 0
+	if splitUp[1] > 0:
+		avg_mid = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "middle.wav")
+	else:
+		avg_mid = 0
+	if splitUp[2] > 0:
+		avg_end = avgIPU_length(os.path.join(os.path.dirname(audioFilePath), "IPUtemp"), "end.wav")
+	else:
+		avg_end = 0
 
 	avgIPUarr = np.array([avg_begin, avg_mid, avg_end])
 

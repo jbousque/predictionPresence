@@ -223,6 +223,7 @@ def POSfreq(taggedTransFile, wavFile, splitUp):
 	:param splitUp:
 	:return:
 	"""
+	logger.debug('POSfreq(taggedTransFile=%s, wavFile=%s, splitUp=%s)', taggedTransFile, wavFile, str(splitUp))
 	dictList = []
 	for i in range(3):
 		dictList.append(defaultdict(list))
@@ -277,7 +278,6 @@ def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 	posFile = POStaggedFile(alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver))
 	fix_eaf_parent_ref(posFile)
 	POSdict = POSfreq(posFile, wavFile, splitUp)
-	logger.debug("POSfeatures: POSdict = %s", str(POSdict))
 	features = np.zeros((9, 3))
 
 	for i in range(3):
@@ -299,5 +299,7 @@ def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 			features[7][i] = POSdict[i]["pronoun"]
 		if(POSdict[i]["verb"]):
 			features[8][i] = POSdict[i]["verb"]
-				
+
+	logger.debug('POSfeatures returns %s', str(features))
+
 	return features	
