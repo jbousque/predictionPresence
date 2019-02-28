@@ -1124,7 +1124,7 @@ def main(argv):
     logger.debug("isSubject ? %s", isSubject)
 
     if isSubject:
-        pathsList = filePaths(['N10D'])
+        pathsList = filePaths()
     else:
         preprocess_agent_data()
         pathsList = filePaths_agent()
