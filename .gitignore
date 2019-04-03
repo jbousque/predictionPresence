@@ -4,4 +4,5 @@
 marsatag*.log
 marsatag*.log-*
 src/output.xra
+src/new*
 *.bak
