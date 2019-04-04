@@ -25,20 +25,42 @@ logger = logging.getLogger(__name__)
 gregCorpusPath = config.PREV_CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
 profBCorpusPath = config.CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/Data"
 
-def filePaths(filter_samples=None):
+all_samples_ids = set()
+
+def filePaths(target_candidate=None, target_env=None):
+    """
+
+    :param target_candidate:
+    :param target_env:
+    :return:
+    """
+
     # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
 
     outerArr = []
-    logger.info('filePaths: filter_samples %s', filter_samples)
+    logger.info('filePaths: filter_samples %s', target_candidate)
+
+    for root, dirs, files in os.path.walk(gregCorpusPath, topdown=True, followlinks=False):
+        if root.count(os.sep) - gregCorpusPath.count(os.sep) >= 3:
+            del dirs[:]
+        else:
+            subject, mode = extract_info(root)
+            if (target_candidate is None or any(subject == filt for filt in target_candidate)) and (
+                    target_env is None or target_env[target_candidate == subject] == mode):
+                all_samples_ids.add((subject, mode))
+    logger.debug("filePaths: All samples ids %s" % str(all_samples_ids))
+
     for subdir in os.listdir(gregCorpusPath):
         if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
-                and (filter_samples is None or any(subdir == filt for filt in filter_samples)):
+                and (target_candidate is None or any(subdir == filt for filt in target_candidate)):
             for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
                 # print envDir
                 innerArr = []
                 foundWav = False
+
                 if os.path.isdir(os.path.join(gregCorpusPath, subdir, envDir)) and \
-                        os.path.isdir(os.path.join(profBCorpusPath, subdir, envDir)):
+                        os.path.isdir(os.path.join(profBCorpusPath, subdir, envDir)) and \
+                        (target_env is None or target_env[target_candidate == subdir] == envDir):
                     # print os.path.join(subdir, envDir)
                     for dirs, subdirs, files in os.walk(os.path.join(gregCorpusPath, subdir, envDir), topdown=True,
                                                         onerror=None, followlinks=False):
@@ -70,38 +92,49 @@ def filePaths(filter_samples=None):
                     outerArr.append(innerArr)
     return outerArr
 
-def filePaths_agent(filter_samples=None):
+def filePaths_agent(target_candidate=None, target_env=None):
     # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
 
     outerArr = []
     agent_path = os.path.join(config.TMP_PATH)
-    logger.info('filePaths_agent: filter_samples %s', filter_samples)
+    logger.info('filePaths_agent(target_candidate=%s, target_env=%s)' % (target_candidate, target_env))
+    for root, dirs, files in os.walk(gregCorpusPath, topdown=True, followlinks=False, onerror=None):
+        if root.count(os.sep) - gregCorpusPath.count(os.sep) >= 3:
+            del dirs[:]
+        else:
+            subject, mode = extract_info(root)
+            if (target_candidate is None or any(subject == filt for filt in target_candidate)) and (target_env is None or target_env[target_candidate == subject] == mode):
+                all_samples_ids.add((subject, mode))
+    logger.debug("filePaths_agent: All samples ids %s" % str(all_samples_ids))
     for root, dirs, files in os.walk(agent_path):
-        logger.debug('filePaths_agent: considering %s', root)
+        #logger.debug('filePaths_agent: considering %s', root)
         subject, mode = extract_info(root)
-        if filter_samples is None or any(subject == filt for filt in filter_samples):
-            #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
-            #if m is None:
-            m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)$', root)
-            if m is not None:
-                mode = m.group(2)
-                subject = m.group(1)
-                logger.debug('filePaths_agent: treating %s / %s', subject, mode)
-                innerArr = []
+        #logger.debug('filePaths_agent: extracted %s / %s' % (subject, mode))
+        if target_candidate is None or any(subject == filt for filt in target_candidate):
+            #logger.debug('filePaths_agent: target_env[target_candidate == subject] %s' % (str(target_env[target_candidate == subject])))
+            if target_env is None or target_env[target_candidate == subject] == mode:
+                #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
+                #if m is None:
+                m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)$', root)
+                if m is not None:
+                    mode = m.group(2)
+                    subject = m.group(1)
+                    logger.debug('filePaths_agent: treating %s / %s', subject, mode)
+                    innerArr = []
 
-                innerArr.append(os.path.join(root, 'agent.xra'))
-                innerArr.append(os.path.join(root, 'agent_sound.wav'))
+                    innerArr.append(os.path.join(root, 'agent.xra'))
+                    innerArr.append(os.path.join(root, 'agent_sound.wav'))
 
-                corpus_path = os.path.join(config.CORPUS_PATH, subject, mode, 'Unity')
-                logger.debug('filePaths_agent: looking for out_record under %s', corpus_path)
-                if os.path.exists(corpus_path):
-                    for file in os.listdir(corpus_path):
-                        name, exten = os.path.splitext(file)
-                        if exten == ".txt":
-                            # print os.path.join(dirs, file)
-                            innerArr.append(os.path.join(corpus_path, file))
-                            outerArr.append(innerArr)
-                else: logger.warn('filePaths_agent: path does not exist %s', corpus_path)
+                    corpus_path = os.path.join(config.CORPUS_PATH, subject, mode, 'Unity')
+                    logger.debug('filePaths_agent: looking for out_record under %s', corpus_path)
+                    if os.path.exists(corpus_path):
+                        for file in os.listdir(corpus_path):
+                            name, exten = os.path.splitext(file)
+                            if exten == ".txt":
+                                # print os.path.join(dirs, file)
+                                innerArr.append(os.path.join(corpus_path, file))
+                                outerArr.append(innerArr)
+                    else: logger.warn('filePaths_agent: path does not exist %s', corpus_path)
 
     logger.debug('filePaths_agent returns %s', str(outerArr))
 
@@ -340,7 +373,14 @@ def compressEntropy(entMat):
 
 
 def prepareMatrix(splitratios, isSubject=True):
+    """
+
+    :param splitratios:
+    :param isSubject:
+    :return:
+    """
     logger.info("prepareMatrix(isSubject=%s, splitratios=%s)", isSubject, splitratios)
+    treated_samples_ids = set()
     # This function was used to traverse the corpus (specifically, the folders where the extracted features are stored) and prepare a feature matrix.
     featureMat = []
 
@@ -442,8 +482,9 @@ def prepareMatrix(splitratios, isSubject=True):
 
                     allSum = np.sum(posMat, axis=0)
 
-                    ratio1 = np.divide(sum1, allSum)
-                    ratio2 = np.divide(sum2, allSum)
+                    # if there is no token we want ratio to be zero (not NaN because of division by zero)
+                    ratio1 = np.divide(sum1, allSum, out=np.zeros_like(sum1), where=allSum!=0)
+                    ratio2 = np.divide(sum2, allSum, out=np.zeros_like(sum1), where=allSum!=0)
 
                     combinedVec = combinedMat.flatten()
 
@@ -483,8 +524,14 @@ def prepareMatrix(splitratios, isSubject=True):
 
                         rat1Vec = np.vstack((rat1Vec, ratio1))
                         rat2Vec = np.vstack((rat2Vec, ratio2))
+
+                    treated_samples_ids.add((candidate, envType))
+
         except Exception as e:
             logger.exception('FAILED to treat %s', dirs)
+
+    logger.debug("prepareMatrix: successfully treated %d samples" % len(treated_samples_ids))
+    logger.debug("prepareMatrix: rejected samples: %s" % str(all_samples_ids - treated_samples_ids))
 
     logger.debug("durationVec %d, pScoreVec %d, classVec %d, copScoreVec %d, copClassVec %d", len(durationVec),
                  len(pScoreVec), len(classVec), len(copScoreVec), len(copClassVec))
@@ -915,8 +962,12 @@ def sorted_alphanumeric(data):
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(data, key=alphanum_key)
 
+def cleanhtml(raw_html):
+  cleanr = re.compile('<.*?>')
+  cleantext = re.sub(cleanr, ' ', raw_html)
+  return cleantext
 
-def preprocess_agent_data():
+def preprocess_agent_data(target_candidate=None, target_env=None):
     """
 
     :return:
@@ -935,47 +986,52 @@ def preprocess_agent_data():
     # build paths
     outer_arr = {}
     for root, dirs, files in os.walk(config.CORPUS_PATH):
-        #inner_arr = {}
-        #logger.debug("preprocess_agent_data:searching %s ...", root)
-        if os.path.basename(os.path.normcase(root)) == 'unity':
-            logger.debug("preprocess_agent_data:   found unity folder")
-            for file in files:
-                name, ext = os.path.splitext(file)
-                if ext == '.txt' and 'out_record' in name:
-                    #inner_arr['rec'] = os.path.join(root, file)
-                    out_rec = os.path.join(root, file)
-                    logger.debug("preprocess_agent_data:    found out_record %s", out_rec)
-                    m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', out_rec)
-                    if m is not None:
-                        mode = m.group(2)
-                        subject = m.group(1)
-                        if outer_arr.get(subject, '?') == '?':
-                            outer_arr[subject] = {}
-                        if outer_arr[subject].get(mode, '?') == '?':
-                            outer_arr[subject][mode] = {}
-                        logger.debug("subject %s mode %s", subject, mode)
-                        outer_arr[subject][mode]['rec'] = out_rec
-                    else: logger.debug("invalid path")
-        elif os.path.basename(os.path.normcase(root)).startswith('session-'):
-            logger.debug("preprocess_agent_data:    found session folder")
-            for file in files:
-                name, ext = os.path.splitext(file)
-                if ext == '.xml' and name.startswith('chat-history.'):
-                    #inner_arr['chat'] = os.path.join(root, file)
-                    chat_xml = os.path.join(root, file)
-                    logger.debug("preprocess_agent_data:    found agent chat %s", chat_xml)
-                    m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', chat_xml)
-                    if m is not None:
-                        mode = m.group(2)
-                        subject = m.group(1)
-                        if outer_arr.get(subject, '?') == '?':
-                            outer_arr[subject] = {}
-                        if outer_arr[subject].get(mode, '?') == '?':
-                            outer_arr[subject][mode] = {}
-                        logger.debug("subject %s mode %s", subject, mode)
-                        outer_arr[subject][mode]['chat'] = chat_xml
-                    else: logger.debug("invalid path")
-        #outer_arr.append(inner_arr)
+
+        subject, mode = extract_info(root)
+        logger.debug('preprocess_agent_data: extracted %s / %s' % (subject, mode))
+        if target_candidate is None or any(subject == filt for filt in target_candidate):
+            if target_env is None or target_env[target_candidate == subject] == mode:
+                #inner_arr = {}
+                #logger.debug("preprocess_agent_data:searching %s ...", root)
+                if os.path.basename(os.path.normcase(root)) == 'unity':
+                    logger.debug("preprocess_agent_data:   found unity folder")
+                    for file in files:
+                        name, ext = os.path.splitext(file)
+                        if ext == '.txt' and 'out_record' in name:
+                            #inner_arr['rec'] = os.path.join(root, file)
+                            out_rec = os.path.join(root, file)
+                            logger.debug("preprocess_agent_data:    found out_record %s", out_rec)
+                            m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', out_rec)
+                            if m is not None:
+                                mode = m.group(2)
+                                subject = m.group(1)
+                                if outer_arr.get(subject, '?') == '?':
+                                    outer_arr[subject] = {}
+                                if outer_arr[subject].get(mode, '?') == '?':
+                                    outer_arr[subject][mode] = {}
+                                logger.debug("subject %s mode %s", subject, mode)
+                                outer_arr[subject][mode]['rec'] = out_rec
+                            else: logger.debug("invalid path")
+                elif os.path.basename(os.path.normcase(root)).startswith('session-'):
+                    logger.debug("preprocess_agent_data:    found session folder")
+                    for file in files:
+                        name, ext = os.path.splitext(file)
+                        if ext == '.xml' and name.startswith('chat-history.'):
+                            #inner_arr['chat'] = os.path.join(root, file)
+                            chat_xml = os.path.join(root, file)
+                            logger.debug("preprocess_agent_data:    found agent chat %s", chat_xml)
+                            m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', chat_xml)
+                            if m is not None:
+                                mode = m.group(2)
+                                subject = m.group(1)
+                                if outer_arr.get(subject, '?') == '?':
+                                    outer_arr[subject] = {}
+                                if outer_arr[subject].get(mode, '?') == '?':
+                                    outer_arr[subject][mode] = {}
+                                logger.debug("subject %s mode %s", subject, mode)
+                                outer_arr[subject][mode]['chat'] = chat_xml
+                            else: logger.debug("invalid path")
+                #outer_arr.append(inner_arr)
 
     logger.debug("preprocess_agent_data: outer_arr %s", str(outer_arr))
     # Treating files
@@ -1003,7 +1059,9 @@ def preprocess_agent_data():
                     if item.nodeType != item.TEXT_NODE:
                         if item.tagName == 'turn' and item.attributes['speaker'].value == 'greta':
                             times.append(int(item.attributes['startTime'].value))
-                            texts.append(item.childNodes[1].firstChild.data)
+                            text = item.childNodes[1].firstChild.data
+                            print("text %s tags removed %s" % (text, cleanhtml(text)))
+                            texts.append(cleanhtml(text))
                         elif item.tagName == 'event':
                             times.append(int(item.attributes['startTime'].value))
                             texts.append('')
@@ -1032,6 +1090,16 @@ def preprocess_agent_data():
                     song = AudioSegment.from_wav(os.path.join(wavdir, wavfile))
                     print(len(song))
                     wavs.append(song)
+
+                # avoid overlaping sounds
+                for idx, wav in enumerate(wavs):
+                    if idx > 0:
+                        print("idx %d %d:%s:%d %d:%s:%d " % (
+                        idx, times[idx - 1], texts[idx - 1], len(wavs[idx - 1]),
+                        times[idx], texts[idx], len(wavs[idx])))
+                        if times[idx] < times[idx - 1] + len(wavs[idx - 1]):
+                            times[idx] = times[idx-1]+len(wavs[idx-1]) + 300
+                            print("   new time %d" % times[idx])
 
                 newsound = AudioSegment.silent(duration=times[-1] + len(wavfiles[-1]))
                 for idx, wav in enumerate(wavs):
@@ -1099,6 +1167,12 @@ def main(argv):
     parser.add_argument("-s", "--splits", nargs='+', type=float, required=False, default=config.DEFAULT_PHASE_SPLIT,
                         help="list of 3 phases ratio, summing to 1")
     parser.add_argument("--agent", help="Whether to compute subject or agent features", action='store_true')
+    parser.add_argument("--candidate", nargs='+', type=str, required=False,
+                        help='extract features of specified candidate(s) only', default=None)
+    parser.add_argument("--env", nargs='+', type=str, required=False,
+                        help='extract features for specified environment(s) only (same number and order as --candidate should be provided',
+                        default=None)
+    parser.add_argument("--pad", help='Whether to preprocess agent sounds or not', action='store_true')
     #parser.add_argument("--matrix", help="Whether to compute features matrix or not", action='store_true')
     #parser.add_argument("--features", help="Whether to compute features or not", action='store_true')
     #parser.add_argument("-o", "--obj", type=str, required=False, default=None,
@@ -1121,13 +1195,23 @@ def main(argv):
     logger.debug("Arguments parsed {args}".format(args=args))
 
     isSubject = not(args.agent)
-    logger.debug("isSubject ? %s", isSubject)
+    logger.debug("isSubject ? %s" % str(isSubject))
+    targetCandidate = args.candidate
+    logger.debug("candidate(s) %s" % targetCandidate)
+    targetEnv = args.env
+    logger.debug("environment(s) %s" % targetEnv)
+    if targetCandidate is not None and targetEnv is not None and len(targetCandidate) != len(targetEnv):
+        logger.warn("--env and --candidate do not have matching lengths")
+        return
+
+    doPreprocessAgentData = args.pad
 
     if isSubject:
-        pathsList = filePaths()
+        pathsList = filePaths(targetCandidate, targetEnv)
     else:
-        preprocess_agent_data()
-        pathsList = filePaths_agent()
+        if doPreprocessAgentData:
+            preprocess_agent_data(targetCandidate, targetEnv)
+        pathsList = filePaths_agent(targetCandidate, targetEnv)
     logger.debug("pathsList: " + str(pathsList))
 
     splitratios = args.splits
