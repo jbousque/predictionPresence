@@ -40,7 +40,7 @@ def filePaths(target_candidate=None, target_env=None):
     outerArr = []
     logger.info('filePaths: filter_samples %s', target_candidate)
 
-    for root, dirs, files in os.path.walk(gregCorpusPath, topdown=True, followlinks=False):
+    for root, dirs, files in os.walk(gregCorpusPath, topdown=True, followlinks=False, onerror=None):
         if root.count(os.sep) - gregCorpusPath.count(os.sep) >= 3:
             del dirs[:]
         else:
@@ -1079,10 +1079,20 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
 
                 if len(wavfiles) != len(times):
                     logger.warn("preprocess_agent_data: there should be as many wav files (%d) as IPUs (%d) !", len(wavfiles), len(times))
-                while len(times) < len(wavfiles):
-                    # complete missing time steps with arbitrary pause
-                    times.append(times[-1] + len(wavfiles[len(times)]) + 1000)
-                    texts.append(' ')
+                    # first we remove empty IPUs if any
+                    i = 0
+                    for idx, text in enumerate(texts):
+                        if texts[idx] == '' and len(times) > len(wavfiles):
+                            texts.pop(idx)
+                            times.pop(idx)
+                        if len(times) == len(wavfiles):
+                            break
+
+                    # or we complete number of IPus with fake ones if necessary
+                    while len(times) < len(wavfiles):
+                        # complete missing time steps with arbitrary pause
+                        times.append(times[-1] + len(wavfiles[len(times)]) + 1000)
+                        texts.append(' ')
 
                 wavs = []
                 for wavfile in wavfiles:
@@ -1104,6 +1114,7 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                 newsound = AudioSegment.silent(duration=times[-1] + len(wavfiles[-1]))
                 for idx, wav in enumerate(wavs):
                     newsound = newsound.overlay(wav, position=times[idx])
+                    logger.debug('preprocess_agent_data: aligned wav %d at time %d with text %s' % (idx, times[idx], texts[idx]))
                 new_wav_file = os.path.join(tmp_dir, 'agent_sound.wav')
                 newsound.export(new_wav_file, format='wav')
 

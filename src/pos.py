@@ -91,8 +91,8 @@ def POStaggedFile(alignFileName):
 	logger.info("POStaggedFile(alignFileName=%s)", alignFileName)
 	# use 'token' instead of 'TokensAlign' ?
 	cmd = [config.MARSATAG_COMMAND, '-cli', '-pt', "TokensAlign", "-oral", "-P", "-p", "lpl-oral", "-r", "elan-lite", "-w", "elan-lite", "-in-ext", ".eaf", "--out-ext", "-marsatag.eaf", alignFileName]
-	logger.debug("cmd " + ' '.join(cmd))
-	logger.debug("POStaggedFile: ", str(subprocess.list2cmdline(cmd)))
+	logger.debug("POStaggedFile: Executing cmd [%s]" % ' '.join(cmd))
+	#logger.debug("POStaggedFile: %s" % str(subprocess.list2cmdline(cmd)))
 	logger.debug(subprocess.check_output(cmd))
     # todo put back "lpl-oral-no-punct" instead of "lpl-oral"
 
