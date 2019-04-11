@@ -16,6 +16,7 @@ from sklearn.svm import SVC
 from sklearn.utils import resample
 
 import config
+from feutils import FEUtils
 from entropy import videoEntropyMatrix
 from ipuseg import IPUdriver
 from pos import POSfeatures, avgSentenceLength
@@ -26,138 +27,9 @@ logger = logging.getLogger(__name__)
 gregCorpusPath = config.PREV_CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/corpus2017"
 profBCorpusPath = config.CORPUS_PATH  # "/home/sameer/Projects/ACORFORMED/Data/Data"
 
-all_samples_ids = set()
+feu = FEUtils()
 
-def filePaths(target_candidate=None, target_env=None):
-    """
 
-    :param target_candidate:
-    :param target_env:
-    :return:
-    """
-
-    # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
-
-    outerArr = []
-    logger.info('filePaths: filter_samples %s', target_candidate)
-
-    for root, dirs, files in os.walk(gregCorpusPath, topdown=True, followlinks=False, onerror=None):
-        if root.count(os.sep) - gregCorpusPath.count(os.sep) >= 3:
-            del dirs[:]
-        else:
-            subject, mode = extract_info(root)
-            if (target_candidate is None or any(subject == filt for filt in target_candidate)) and (
-                    target_env is None or target_env[target_candidate == subject] == mode):
-                all_samples_ids.add((subject, mode))
-    logger.debug("filePaths: All samples ids %s" % str(all_samples_ids))
-
-    for subdir in os.listdir(gregCorpusPath):
-        if os.path.isdir(os.path.join(gregCorpusPath, subdir))\
-                and (target_candidate is None or any(subdir == filt for filt in target_candidate)):
-            for envDir in os.listdir(os.path.join(gregCorpusPath, subdir)):
-                # print envDir
-                innerArr = []
-                foundWav = False
-
-                if os.path.isdir(os.path.join(gregCorpusPath, subdir, envDir)) and \
-                        os.path.isdir(os.path.join(profBCorpusPath, subdir, envDir)) and \
-                        (target_env is None or target_env[target_candidate == subdir] == envDir):
-                    # print os.path.join(subdir, envDir)
-                    for dirs, subdirs, files in os.walk(os.path.join(gregCorpusPath, subdir, envDir), topdown=True,
-                                                        onerror=None, followlinks=False):
-                        #logger.debug("DEBUG os.walk dirs=%s, subdirs=%s, files=%s", dirs, subdirs, files)
-                        for file in files:
-                            name, exten = os.path.splitext(file)
-
-                            if (os.path.basename(os.path.normpath(dirs)) == 'data') and (exten == ".wav"):
-                                innerArr.append(os.path.join(dirs, file))
-                                foundWav = True
-                            if os.path.basename(os.path.normcase(dirs)) == 'asr-trans' and exten == '.xra':
-                                innerArr.append(os.path.join(dirs, file))
-
-                    for dirs, subdirs, files in os.walk(os.path.join(profBCorpusPath, subdir, envDir), topdown=True,
-                                                        onerror=None, followlinks=False):
-                        for file in files:
-                            name, exten = os.path.splitext(file)
-
-                            if (os.path.basename(os.path.normpath(dirs)) == 'Video') and (exten == ".mp4"):
-                                # print os.path.join(dirs, file)
-                                innerArr.append(os.path.join(dirs, file))
-                            if (os.path.basename(os.path.normpath(dirs)) == 'Unity') and (exten == ".txt"):
-                                # print os.path.join(dirs, file)
-                                innerArr.append(os.path.join(dirs, file))
-                                # if micro HF wav was not found in first corpus, we take the one from second corpus
-                            if os.path.basename(os.path.normpath(dirs)).startswith('session') and exten == '.wav':
-                                if not foundWav:
-                                    innerArr.append(os.path.join(dirs, file))
-                    outerArr.append(innerArr)
-    return outerArr
-
-def filePaths_agent(target_candidate=None, target_env=None):
-    # The function collects 4 files for each sample from the two sources in the paths below. The 4 files are: unity coordinates, xra transcription, wav participant mic audio, and the mp4 extracted from the video. It returns an array of arrays. Each outer array corresponds to a sample (a participant-environment combination) and each inner array contains four paths, one corresponding to each of the mentioned files. The output of this function is used by the functions which compute entropies, IPU lengths, sentence lengths, and POS tags.
-
-    outerArr = []
-    agent_path = os.path.join(config.TMP_PATH)
-    logger.info('filePaths_agent(target_candidate=%s, target_env=%s)' % (target_candidate, target_env))
-    for root, dirs, files in os.walk(gregCorpusPath, topdown=True, followlinks=False, onerror=None):
-        if root.count(os.sep) - gregCorpusPath.count(os.sep) >= 3:
-            del dirs[:]
-        else:
-            subject, mode = extract_info(root)
-            if (target_candidate is None or any(subject == filt for filt in target_candidate)) and (target_env is None or target_env[target_candidate == subject] == mode):
-                all_samples_ids.add((subject, mode))
-    logger.debug("filePaths_agent: All samples ids %s" % str(all_samples_ids))
-    for root, dirs, files in os.walk(agent_path):
-        #logger.debug('filePaths_agent: considering %s', root)
-        subject, mode = extract_info(root)
-        #logger.debug('filePaths_agent: extracted %s / %s' % (subject, mode))
-        if target_candidate is None or any(subject == filt for filt in target_candidate):
-            #logger.debug('filePaths_agent: target_env[target_candidate == subject] %s' % (str(target_env[target_candidate == subject])))
-            if target_env is None or target_env[target_candidate == subject] == mode:
-                #m = re.search(r'([EN]\d\d[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', root)
-                #if m is None:
-                m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)$', root)
-                if m is not None:
-                    mode = m.group(2)
-                    subject = m.group(1)
-                    logger.debug('filePaths_agent: treating %s / %s', subject, mode)
-                    innerArr = []
-
-                    innerArr.append(os.path.join(root, 'agent.xra'))
-                    innerArr.append(os.path.join(root, 'agent_sound.wav'))
-
-                    corpus_path = os.path.join(config.CORPUS_PATH, subject, mode, 'Unity')
-                    logger.debug('filePaths_agent: looking for out_record under %s', corpus_path)
-                    if os.path.exists(corpus_path):
-                        for file in os.listdir(corpus_path):
-                            name, exten = os.path.splitext(file)
-                            if exten == ".txt":
-                                # print os.path.join(dirs, file)
-                                innerArr.append(os.path.join(corpus_path, file))
-                                outerArr.append(innerArr)
-                    else: logger.warn('filePaths_agent: path does not exist %s', corpus_path)
-
-    logger.debug('filePaths_agent returns %s', str(outerArr))
-
-    return outerArr
-
-def getFeaturesetFolderName(isSubject, phasesSplit):
-    """
-    Formats and returns name of feature folder for given featureset.
-    :param isSubject: True if medic, False if agent (greta)
-    :param phasesSplit: split ratios for phases, or None.
-    :return: formatted folder name for featureset.
-    """
-    #logger.debug('getFeaturesetFolderName(isSubject=%s, phasesSplit=%s)', isSubject, phasesSplit)
-    featuresetName = 'Features'
-    if not isSubject:
-        featuresetName += '-agent'
-    if phasesSplit is None or (phasesSplit[0] == 0 and phasesSplit[2] == 0):
-        featuresetName += '-nophase'
-    else:
-        featuresetName += '-%d%d%d' % ( phasesSplit[0]*100, phasesSplit[1]*100, phasesSplit[2]*100 )
-    #logger.debug('getFeaturesetFolderName returns %s', featuresetName)
-    return featuresetName
 
 def computePOStags(pathsList, splitratios, isSubject = True):
     crashlist = []
@@ -178,10 +50,10 @@ def computePOStags(pathsList, splitratios, isSubject = True):
                         # print path, wavPath
                         try:
                             POSfreqArr = POSfeatures(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
-                            candidate, envType = extract_info(path)
+                            candidate, envType = feu.extract_info(path)
                             logger.debug('computePOStags: profBCorpusPat%s, candidate=%s, envType=%s, getFeaturesetFolderName(isSubject, splitratios)=%s',
-                                         profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios))
-                            dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
+                                         profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios))
+                            dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
                             # make sure 'Features' path exists
                             if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                             np.savetxt(dest, POSfreqArr)
@@ -209,8 +81,8 @@ def computeSentenceLengths(pathsList, splitratios, isSubject = True):
                         # print path, wavPath
                         try:
                             sentenceLengthArray = avgSentenceLength(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
-                            candidate, envType = extract_info(path)
-                            dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "slength.txt")
+                            candidate, envType = feu.extract_info(path)
+                            dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "slength.txt")
                             np.savetxt(dest, sentenceLengthArray)
                         except Exception:
                             logger.exception("computeSentenceLengths() failed for %s", wavPath)
@@ -225,13 +97,13 @@ def computeEntropies(pathsList, splitratios, isSubject=True):
                 #envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(path))))
                 #candidate = os.path.basename(
                 #    os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
-                candidate, envType = extract_info(path)
+                candidate, envType = feu.extract_info(path)
                 logger.debug("computeEntropies: path " + path)
                 logger.debug("computeEntropies: envTyp "+envType)
                 logger.debug("computeEntropies: candidate " + candidate)
                 try:
                     entArr = videoEntropyMatrix(path, splitratios)
-                    dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "entropy.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "entropy.txt")
                     if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                     np.savetxt(dest, entArr)
                 except Exception:
@@ -246,10 +118,10 @@ def computeIPUlengths(pathsList, splitratios, isSubject=True):
             if (fileext == ".wav" and not any(crashpath in path for crashpath in crashlist)):
                 #envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(path))))
                 #candidate = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
-                candidate, envType = extract_info(path)
+                candidate, envType = feu.extract_info(path)
                 try:
                     entArr = IPUdriver(path, splitratios)
-                    dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "ipu.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "ipu.txt")
                     if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                     logger.debug("computeIPUlengths: saving %s", dest)
                     np.savetxt(dest, entArr)
@@ -296,7 +168,7 @@ def removeNaN(splitratios, isSubject = True):
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None,
                                         followlinks=False):  # this loop computes the sums and currentFreq arrays
         for file in files:
-            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios):
+            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios):
                 completePath = os.path.join(dirs, file)
                 sums = sum_nan_arrays(sums, np.loadtxt(completePath))
                 currentFreq = updateFrequencies(currentFreq, np.loadtxt(completePath))
@@ -307,7 +179,7 @@ def removeNaN(splitratios, isSubject = True):
 
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         for file in files:
-            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios):
+            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios):
                 completePath = os.path.join(dirs, file)
                 origMat = np.loadtxt(completePath)
                 ma = np.isnan(origMat)
@@ -348,18 +220,18 @@ def movePOSfiles(pathsList, splitratios, isSubject=True):
                         os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(posFile)))))
                     candidate = os.path.basename(
                         os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(posFile))))))
-                    dest = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
                     shutil.copy(posFile, dest)
 
 
 def moveIPUfiles(splitratios, isSubject = True):
     for dirs, subdirs, files in os.walk(gregCorpusPath, topdown=True, onerror=None, followlinks=False):
-        if (os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios) and os.path.isfile(os.path.join(dirs, 'ipu.txt'))):
+        if (os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios) and os.path.isfile(os.path.join(dirs, 'ipu.txt'))):
             envType = os.path.basename(
                 os.path.normpath(os.path.dirname(os.path.dirname(os.path.join(dirs, 'ipu.txt')))))
             candidate = os.path.basename(
                 os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.join(dirs, 'ipu.txt'))))))
-            target = os.path.join(profBCorpusPath, candidate, envType, getFeaturesetFolderName(isSubject, splitratios))
+            target = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios))
             if os.path.exists(target):
                 shutil.copy(os.path.join(dirs, "ipu.txt"), target)
 
@@ -396,10 +268,10 @@ def prepareMatrix(splitratios, isSubject=True):
     pScoreVec = []
     copClassVec = []
     copScoreVec = []
-    logger.debug('prepareMatrix: retrieving features from folders "%s"', getFeaturesetFolderName(isSubject, splitratios))
+    logger.debug('prepareMatrix: retrieving features from folders "%s"', feu.getFeaturesetFolderName(isSubject, splitratios))
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         try:
-            if (os.path.basename(os.path.normpath(dirs)) == getFeaturesetFolderName(isSubject, splitratios)):
+            if (os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios)):
                 logger.debug('prepareMatrix: treating path ' + dirs)
                 entropyFile = os.path.join(dirs, "usableEntropies.txt")
                 posFile = os.path.join(dirs, "pos.txt")
@@ -535,7 +407,7 @@ def prepareMatrix(splitratios, isSubject=True):
             logger.exception('FAILED to treat %s', dirs)
 
     logger.debug("prepareMatrix: successfully treated %d samples" % len(treated_samples_ids))
-    logger.debug("prepareMatrix: rejected samples: %s" % str(all_samples_ids - treated_samples_ids))
+    logger.debug("prepareMatrix: rejected samples: %s" % str(feu.all_samples_ids - treated_samples_ids))
 
     logger.debug("durationVec %d, pScoreVec %d, classVec %d, copScoreVec %d, copClassVec %d", len(durationVec),
                  len(pScoreVec), len(classVec), len(copScoreVec), len(copClassVec))
@@ -547,7 +419,7 @@ def prepareMatrix(splitratios, isSubject=True):
     logger.debug('prepareMatrix: mat shape %s', str(mat.shape))
     pdDump = pd.DataFrame(mat)
     dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX
-                            + getFeaturesetFolderName(isSubject, splitratios) + '.xlsx')
+                            + feu.getFeaturesetFolderName(isSubject, splitratios) + '.xlsx')
 
 
 
@@ -991,7 +863,7 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
     outer_arr = {}
     for root, dirs, files in os.walk(config.CORPUS_PATH):
 
-        subject, mode = extract_info(root)
+        subject, mode = feu.extract_info(root)
         #logger.debug('preprocess_agent_data: extracted %s / %s' % (subject, mode))
         if target_candidate is None or any(subject == filt for filt in target_candidate):
             if target_env is None or target_env[target_candidate == subject] == mode:
@@ -1174,16 +1046,7 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
             except Exception as e:
                 logger.exception("FAILURE for %s / %s", subject, mode)
 
-def extract_info(path):
-    mode = None
-    subject = None
-    m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)[\\/]', path)
-    if m is None:
-        m = re.search(r'([EN][\d]{1,2}[ABCDEF])[\\/](Casque|PC|Cave)$', path)
-    if m is not None:
-        mode = m.group(2)
-        subject = m.group(1)
-    return subject, mode
+
 
 def main(argv):
     # cli parameters
@@ -1231,15 +1094,15 @@ def main(argv):
     doPreprocessAgentData = args.pad
 
     if isSubject:
-        pathsList = filePaths(targetCandidate, targetEnv)
+        pathsList = feu.filePaths(targetCandidate, targetEnv)
     else:
         if doPreprocessAgentData:
             preprocess_agent_data(targetCandidate, targetEnv)
-        pathsList = filePaths_agent(targetCandidate, targetEnv)
+        pathsList = feu.filePaths_agent(targetCandidate, targetEnv)
     logger.debug("pathsList: " + str(pathsList))
 
     splitratios = args.splits
-    logger.info('main: treating featureset "%s"', getFeaturesetFolderName(isSubject, splitratios))
+    logger.info('main: treating featureset "%s"', feu.getFeaturesetFolderName(isSubject, splitratios))
 
     #pathsList = filePaths_agent()
 

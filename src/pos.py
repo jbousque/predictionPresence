@@ -9,8 +9,10 @@ import config
 import logging
 import shutil
 
+from feutils import FEUtils
 
 logger = logging.getLogger(__name__)
+feu = FEUtils()
 
 sp_globPath = config.SPPAS_SRC_PATH
 greg_path = config.SPPAS_GREG_SRC_PATH
@@ -83,28 +85,49 @@ def alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver):
 
     # silents parts of sound where doctor does not speech to improve detection of pos (only for doctor not for agent,
     # as aligned transcription for agent is not very good).
-    if not os.path.isfile(wavFile+'-orig2') and not(transcriptionFile.startsWith('agent-')):
-        newsound = AudioSegment.silent(endValue)
-        tier = trs.Find('ASR-Transcription')
+    if not os.path.isfile(wavFile+'-orig2') and os.path.basename(transcriptionFile).startswith('agent'):
+        subject, mode = feu.extract_info(wavFile)
+        logger.debug('alignmentFile: extracted %s / %s' % (subject, mode))
+        tier = trs.Find('transcription')
         if tier is not None:
-            beg = 0
-            beg_radius = 0
-            inside = False
-            logger.debug('alignmentFile: length %d' % len(song))
-            for idx, point in enumerate(tier.GetAllPoints()):
-                end = point.GetValue() * 1000
-                end_radius = point.GetRadius() * 1000
-                logger.debug("alignmentFile: range %d+-%d..%d+-%d (inside=%s)" % (beg, beg_radius, end, end_radius, inside))
-                if not(inside):
-                    song[beg+beg_radius:end-end_radius] = 0
-                beg = end
-                beg_radius = end_radius
-                inside = not(inside)
-            if beg < len(song):
-                song[beg+beg_radius, len(song)] = 0
-            # backup original and remove it from being taken in the loop
-            os.rename(wavFile, wavFile+'-orig2')
-            song.export(wavFile, format='wav')
+            # retrieve doctor wav file
+            file_paths = feu.filePaths([subject], [mode])
+            wavPath = None
+            for potential_wav_path in file_paths[0]:
+                _, extWav = os.path.splitext(potential_wav_path)
+                if (extWav == ".wav"):
+                    wavPath = potential_wav_path
+            if wavPath is not None:
+                logger.debug('alignmentFile: found doctor wav %s' % wavPath)
+                new_song = None #AudioSegment.silent(len(song))
+                doc_song = AudioSegment.from_wav(wavPath) - 40
+                beg = 0
+                beg_radius = 0
+                inside = False
+                logger.debug('alignmentFile: length %d' % len(song))
+                for idx, point in enumerate(tier.GetAllPoints()):
+                    end = point.GetValue() * 1000
+                    end_radius = point.GetRadius() * 1000
+                    logger.debug(
+                        "alignmentFile: overlay range %d-%d..%d+%d" % (beg, beg_radius, end, end_radius))
+                    segment = song[beg:end]
+                    if not inside:
+                        segment = doc_song[beg:end]
+                        # new_song = new_song.overlay(song[beg-beg_radius:end+end_radius], position=beg-beg_radius)
+                        # lower the sound out of doctor speech
+                        #new_song = new_song.overlay(song[beg-beg_radius:end+end_radius] - 100, position=beg-beg_radius)
+                    else:
+                        segment = song[beg:end] - 10
+                    if idx == 0:
+                        new_song = segment
+                    else:
+                        new_song = new_song + segment
+                    beg = end
+                    beg_radius = end_radius
+                    inside = not(inside)
+                # backup original and remove it from being taken in the loop
+                os.rename(wavFile, wavFile+'-orig2')
+                new_song.export(wavFile, format='wav')
 
     #Subprocess call to create tokenized transcription file.
     if os.path.isfile(tokFileName) and not config.FORCE_OW:
