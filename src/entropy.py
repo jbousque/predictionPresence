@@ -75,6 +75,7 @@ def pathLength_plane(points):
 
 def entropy(pointMatrix):
     try:
+        logger.debug('entropy: pointMatrix=%s' % str(pointMatrix))
         hull = ConvexHull(pointMatrix)
         vertices = np.append(hull.vertices, hull.vertices[0])
 
@@ -93,9 +94,11 @@ def entropy(pointMatrix):
         # print "Hull perimeter: ", hullPerimeter
 
         return entropy
-    except scipy.spatial.qhull.QhullError:
+    except scipy.spatial.qhull.QhullError as e:
+        #TODO print input that causes this
+        logger.exception('Convex Hull Error')
         return np.NaN
-        print("Convex Hull Error")
+
 
 
 """

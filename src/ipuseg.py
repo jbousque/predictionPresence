@@ -14,6 +14,12 @@ from annotations.IPUs.ipusseg import sppasIPUs
 logger = logging.getLogger(__name__)
 
 def convertToMono(audioFileLoc, audioFileName):
+	"""
+
+	:param audioFileLoc:
+	:param audioFileName:
+	:return:
+	"""
 	logger.debug('convertToMono(audioFileLoc=%s, audioFileName=%s)', audioFileLoc, audioFileName)
 	audioFile = os.path.join(audioFileLoc, audioFileName)
 	fileName, fileExt = os.path.splitext(audioFileName)
@@ -27,6 +33,12 @@ def convertToMono(audioFileLoc, audioFileName):
 	return monoFileName
 
 def avgIPU_length(audioFileLoc, audioFileName):
+	"""
+
+	:param audioFileLoc:
+	:param audioFileName:
+	:return:
+	"""
 	logger.debug('avgIPU_length(audioFileLoc=%s, audioFileName=%s)', audioFileLoc, audioFileName)
 
 	f = convertToMono(audioFileLoc, audioFileName)
@@ -36,25 +48,31 @@ def avgIPU_length(audioFileLoc, audioFileName):
 	if not os.path.exists(os.path.dirname(out_dir)): os.makedirs(os.path.dirname(out_dir))
 
 	IPUobj = sppasIPUs()
-	IPUobj.run(audiofile = f, trsinputfile=None, trstieridx=None, ntracks=None, diroutput=out_dir, tracksext="xra", trsoutput="output.xra")
+	try:
+		IPUobj.run(audiofile = f, trsinputfile=None, trstieridx=None, ntracks=None, diroutput=out_dir, tracksext="xra", trsoutput="output.xra")
+		index_file = os.path.join(out_dir, "index.txt")
 
-	index_file = os.path.join(out_dir, "index.txt")
+		summary = pd.read_csv(index_file, sep=' ', header=None)
+		summary = summary.dropna()
+		print(summary)
 
-	"""
-	with open(index_file) as ind:
-		summary = ind.readlines()
-	"""
+		IPU_lengths = summary[1] - summary[0]
+		return_val = IPU_lengths.mean()
+	except ZeroDivisionError:
+		logger.warn('avgIPU_length: SPPAS returned ZeroDivisionError meaning there is no IPU in this segment')
+		return_val = 0
 
-	summary = pd.read_csv(index_file, sep = ' ', header = None)
-	summary = summary.dropna()
-	print(summary)
-
-	IPU_lengths = summary[1] - summary[0]
-	logger.debug('avgIPU_length returns %s', str(IPU_lengths))
-	return IPU_lengths.mean()
+	logger.debug('avgIPU_length returns %s' % return_val)
+	return return_val
 
 
 def IPUdriver(audioFilePath, splitUp):
+	"""
+
+	:param audioFilePath:
+	:param splitUp:
+	:return:
+	"""
 	logger.debug('IPUdriver(audioFilePath=%s, splitUp=%s)', audioFilePath, str(splitUp))
 	splitInThree(audioFilePath, splitUp)
 

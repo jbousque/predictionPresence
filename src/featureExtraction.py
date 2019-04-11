@@ -5,6 +5,7 @@ import shutil
 import sys
 import re
 import glob
+from shutil import copyfile
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -159,12 +160,13 @@ def getFeaturesetFolderName(isSubject, phasesSplit):
     return featuresetName
 
 def computePOStags(pathsList, splitratios, isSubject = True):
-    crashlist = ["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
-                 "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra", "E02B-02-Cave-micro.E2B-latin1.xra",
+    crashlist = []
+    """"["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
+                 "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra",
                  "N06F-05-PC-micro.E1-5.xra", "N06F-01-PC-micro.E1-5.xra", "N06F-04-Casque-micro.E1-5.xra",
                  "N06F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
                  "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N04D-01-Casque-micro.E1-5.xra",
-                 "E07A-02-Casque-micro.E1-5.xra"]
+                 "E07A-02-Casque-micro.E1-5.xra"] # "E02B-02-Cave-micro.E2B-latin1.xra", (after N03C)"""
     for paths in pathsList:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
@@ -189,12 +191,13 @@ def computePOStags(pathsList, splitratios, isSubject = True):
 
 def computeSentenceLengths(pathsList, splitratios, isSubject = True):
     # code cleanup: computeSentenceLengths and computePOStags do redundant work. Could be improved
-    crashlist = ["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
-                 "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra", "E02B-02-Cave-micro.E2B-latin1.xra",
+    crashlist = []
+    """["N01A-02-Casque-micro.E1-5.xra", "N02B-02-PC-micro.E1-5.xra", "E06F-03-Cave-micro.E1-5.xra",
+                 "N15C-01-Casque-micro.E1-5.xra", "N03C-01-Casque-micro.E1-5.xra",
                  "N06F-05-PC-micro.E1-5.xra", "N06F-01-PC-micro.E1-5.xra", "N06F-04-Casque-micro.E1-5.xra",
                  "N06F-02-Casque-micro.E1-5.xra", "N21C-03-PC-micro.E1-5.xra", "N22D-02-PC-micro.E1-5.xra",
                  "N22D-02-PC-micro.E1-5.xra", "N22D-03-Cave-micro.E1-5.xra", "N04D-01-Casque-micro.E1-5.xra",
-                 "E07A-02-Casque-micro.E1-5.xra"]
+                 "E07A-02-Casque-micro.E1-5.xra"] # "E02B-02-Cave-micro.E2B-latin1.xra","""
     for paths in pathsList:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
@@ -403,21 +406,22 @@ def prepareMatrix(splitratios, isSubject=True):
                 slengthFile = os.path.join(dirs, "slength.txt")
                 ipuFile = os.path.join(dirs, "ipu.txt")
 
+                envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(posFile))))
+                candidate = os.path.basename(
+                    os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(posFile)))))
+                candidateLevel = candidate[0]
+
                 if not os.path.isfile(entropyFile):
-                    logger.warn('prepareMatrix: missing entropy file %s', entropyFile)
+                    logger.warn('prepareMatrix: missing entropy file %s for %s/%s', entropyFile, candidate, envType)
                 elif not os.path.isfile(posFile):
-                    logger.warn('prepareMatrix: missing parts of speech file %s', posFile)
+                    logger.warn('prepareMatrix: missing parts of speech file %s for %s/%s', posFile, candidate, envType)
                 elif not os.path.isfile(slengthFile):
-                    logger.warn('prepareMatrix: missing sentence lengths file %s', slengthFile)
+                    logger.warn('prepareMatrix: missing sentence lengths file %s for %s/%s', slengthFile, candidate, envType)
                 elif not os.path.isfile(ipuFile):
-                    logger.warn('prepareMatrix: missing IPUs file %s', ipuFile)
+                    logger.warn('prepareMatrix: missing IPUs file %s for %s/%s', ipuFile, candidate, envType)
                 else:
                     # print "in condition"
                     expert = 1
-                    envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(posFile))))
-                    candidate = os.path.basename(
-                        os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(posFile)))))
-                    candidateLevel = candidate[0]
 
                     """
                     labels = pd.read_excel("/home/sameer/Projects/ACORFORMED/Data/presence.xlsx")
@@ -988,7 +992,7 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
     for root, dirs, files in os.walk(config.CORPUS_PATH):
 
         subject, mode = extract_info(root)
-        logger.debug('preprocess_agent_data: extracted %s / %s' % (subject, mode))
+        #logger.debug('preprocess_agent_data: extracted %s / %s' % (subject, mode))
         if target_candidate is None or any(subject == filt for filt in target_candidate):
             if target_env is None or target_env[target_candidate == subject] == mode:
                 #inner_arr = {}
@@ -1062,9 +1066,9 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                             text = item.childNodes[1].firstChild.data
                             print("text %s tags removed %s" % (text, cleanhtml(text)))
                             texts.append(cleanhtml(text))
-                        elif item.tagName == 'event':
+                        """elif item.tagName == 'event':
                             times.append(int(item.attributes['startTime'].value))
-                            texts.append('')
+                            texts.append('')"""
 
                 logger.debug('preprocess_agent_data: found %d time steps', len(times))
 
@@ -1110,8 +1114,11 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                         if times[idx] < times[idx - 1] + len(wavs[idx - 1]):
                             times[idx] = times[idx-1]+len(wavs[idx-1]) + 300
                             print("   new time %d" % times[idx])
+                    else:
+                        print("idx %d %d:%s:%d " % (
+                            idx, times[idx], texts[idx], len(wavs[idx])))
 
-                newsound = AudioSegment.silent(duration=times[-1] + len(wavfiles[-1]))
+                newsound = AudioSegment.silent(duration=times[-1] + len(wavs[-1]))
                 for idx, wav in enumerate(wavs):
                     newsound = newsound.overlay(wav, position=times[idx])
                     logger.debug('preprocess_agent_data: aligned wav %d at time %d with text %s' % (idx, times[idx], texts[idx]))
@@ -1131,10 +1138,13 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
 
                 # todo use sppas to convert csv file + wav to xra file
                 sppas_cmd = os.path.join(config.SPPAS_2_PATH, 'sppas', 'bin', 'fillipus.py')
-                new_xra_file = os.path.join(tmp_dir, 'agent.xra')
+                new_xra_file = os.path.join(tmp_dir, 'alt_agent.xra')
                 cmd = ['python', sppas_cmd, '-i', new_wav_file, '-t', new_txt_file, '-o', new_xra_file]
                 logger.debug("Executing %s", subprocess.list2cmdline(cmd))
                 logger.debug(subprocess.check_output(cmd))
+
+                # backup xra
+                shutil.copy(new_xra_file, os.path.join(tmp_dir, 'alt_agent_bak.xra'))
 
                 # now convert to format expected by SPPAS 1.8.6
                 xra_file = new_xra_file
@@ -1156,6 +1166,9 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                 with open(xra_file, 'w') as file:
                     file.write(filedata)
                 file.close()
+
+                from agent import generate_xra
+                generate_xra(texts, times, wavs, os.path.join(tmp_dir, 'agent.xra'))
 
 
             except Exception as e:
