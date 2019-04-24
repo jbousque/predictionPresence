@@ -52,8 +52,8 @@ def computePOStags(pathsList, splitratios, isSubject = True):
                             POSfreqArr = POSfeatures(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
                             candidate, envType = feu.extract_info(path)
                             logger.debug('computePOStags: profBCorpusPat%s, candidate=%s, envType=%s, getFeaturesetFolderName(isSubject, splitratios)=%s',
-                                         profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios))
-                            dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
+                                         profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios))
+                            dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "pos.txt")
                             # make sure 'Features' path exists
                             if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                             np.savetxt(dest, POSfreqArr)
@@ -82,7 +82,7 @@ def computeSentenceLengths(pathsList, splitratios, isSubject = True):
                         try:
                             sentenceLengthArray = avgSentenceLength(path, wavPath, splitratios, config.SPPAS_PATH, "1.8.6")
                             candidate, envType = feu.extract_info(path)
-                            dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "slength.txt")
+                            dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "slength.txt")
                             np.savetxt(dest, sentenceLengthArray)
                         except Exception:
                             logger.exception("computeSentenceLengths() failed for %s", wavPath)
@@ -103,7 +103,7 @@ def computeEntropies(pathsList, splitratios, isSubject=True):
                 logger.debug("computeEntropies: candidate " + candidate)
                 try:
                     entArr = videoEntropyMatrix(path, splitratios)
-                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "entropy.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "entropy.txt")
                     if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                     np.savetxt(dest, entArr)
                 except Exception:
@@ -121,7 +121,7 @@ def computeIPUlengths(pathsList, splitratios, isSubject=True):
                 candidate, envType = feu.extract_info(path)
                 try:
                     entArr = IPUdriver(path, splitratios)
-                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "ipu.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "ipu.txt")
                     if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                     logger.debug("computeIPUlengths: saving %s", dest)
                     np.savetxt(dest, entArr)
@@ -168,7 +168,7 @@ def removeNaN(splitratios, isSubject = True):
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None,
                                         followlinks=False):  # this loop computes the sums and currentFreq arrays
         for file in files:
-            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios):
+            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == feu.get_featureset_folder_name(isSubject, splitratios):
                 completePath = os.path.join(dirs, file)
                 sums = sum_nan_arrays(sums, np.loadtxt(completePath))
                 currentFreq = updateFrequencies(currentFreq, np.loadtxt(completePath))
@@ -179,7 +179,7 @@ def removeNaN(splitratios, isSubject = True):
 
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         for file in files:
-            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios):
+            if file == "entropy.txt" and os.path.basename(os.path.normpath(dirs)) == feu.get_featureset_folder_name(isSubject, splitratios):
                 completePath = os.path.join(dirs, file)
                 origMat = np.loadtxt(completePath)
                 ma = np.isnan(origMat)
@@ -220,18 +220,18 @@ def movePOSfiles(pathsList, splitratios, isSubject=True):
                         os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(posFile)))))
                     candidate = os.path.basename(
                         os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(posFile))))))
-                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios), "pos.txt")
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "pos.txt")
                     shutil.copy(posFile, dest)
 
 
 def moveIPUfiles(splitratios, isSubject = True):
     for dirs, subdirs, files in os.walk(gregCorpusPath, topdown=True, onerror=None, followlinks=False):
-        if (os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios) and os.path.isfile(os.path.join(dirs, 'ipu.txt'))):
+        if (os.path.basename(os.path.normpath(dirs)) == feu.get_featureset_folder_name(isSubject, splitratios) and os.path.isfile(os.path.join(dirs, 'ipu.txt'))):
             envType = os.path.basename(
                 os.path.normpath(os.path.dirname(os.path.dirname(os.path.join(dirs, 'ipu.txt')))))
             candidate = os.path.basename(
                 os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.join(dirs, 'ipu.txt'))))))
-            target = os.path.join(profBCorpusPath, candidate, envType, feu.getFeaturesetFolderName(isSubject, splitratios))
+            target = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios))
             if os.path.exists(target):
                 shutil.copy(os.path.join(dirs, "ipu.txt"), target)
 
@@ -268,10 +268,10 @@ def prepareMatrix(splitratios, isSubject=True):
     pScoreVec = []
     copClassVec = []
     copScoreVec = []
-    logger.debug('prepareMatrix: retrieving features from folders "%s"', feu.getFeaturesetFolderName(isSubject, splitratios))
+    logger.debug('prepareMatrix: retrieving features from folders "%s"', feu.get_featureset_folder_name(isSubject, splitratios))
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         try:
-            if (os.path.basename(os.path.normpath(dirs)) == feu.getFeaturesetFolderName(isSubject, splitratios)):
+            if (os.path.basename(os.path.normpath(dirs)) == feu.get_featureset_folder_name(isSubject, splitratios)):
                 logger.debug('prepareMatrix: treating path ' + dirs)
                 entropyFile = os.path.join(dirs, "usableEntropies.txt")
                 posFile = os.path.join(dirs, "pos.txt")
@@ -419,7 +419,7 @@ def prepareMatrix(splitratios, isSubject=True):
     logger.debug('prepareMatrix: mat shape %s', str(mat.shape))
     pdDump = pd.DataFrame(mat)
     dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX
-                            + feu.getFeaturesetFolderName(isSubject, splitratios) + '.xlsx')
+                            + feu.get_featureset_folder_name(isSubject, splitratios) + '.xlsx')
 
 
 
@@ -1094,15 +1094,15 @@ def main(argv):
     doPreprocessAgentData = args.pad
 
     if isSubject:
-        pathsList = feu.filePaths(targetCandidate, targetEnv)
+        pathsList = feu.get_filtered_file_paths(targetCandidate, targetEnv)
     else:
         if doPreprocessAgentData:
             preprocess_agent_data(targetCandidate, targetEnv)
-        pathsList = feu.filePaths_agent(targetCandidate, targetEnv)
+        pathsList = feu.get_filtered_file_paths_agent(targetCandidate, targetEnv)
     logger.debug("pathsList: " + str(pathsList))
 
     splitratios = args.splits
-    logger.info('main: treating featureset "%s"', feu.getFeaturesetFolderName(isSubject, splitratios))
+    logger.info('main: treating featureset "%s"', feu.get_featureset_folder_name(isSubject, splitratios))
 
     #pathsList = filePaths_agent()
 

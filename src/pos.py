@@ -91,7 +91,7 @@ def alignmentFile(transcriptionFile, wavFile, sppaspath, sppasver):
         tier = trs.Find('transcription')
         if tier is not None:
             # retrieve doctor wav file
-            file_paths = feu.filePaths([subject], [mode])
+            file_paths = feu.get_filtered_file_paths([subject], [mode])
             wavPath = None
             for potential_wav_path in file_paths[0]:
                 _, extWav = os.path.splitext(potential_wav_path)

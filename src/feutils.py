@@ -1,6 +1,7 @@
 import re
 import logging
 import os
+import pickle
 
 import config
 
@@ -32,7 +33,7 @@ class FEUtils():
             subject = m.group(1)
         return subject, mode
 
-    def getFeaturesetFolderName(self, isSubject, phasesSplit):
+    def get_featureset_folder_name(self, isSubject, phasesSplit):
         """
         Formats and returns name of feature folder for given featureset.
         :param isSubject: True if medic, False if agent (greta)
@@ -50,7 +51,7 @@ class FEUtils():
         #logger.debug('getFeaturesetFolderName returns %s', featuresetName)
         return featuresetName
 
-    def filePaths(self, target_candidate=None, target_env=None):
+    def get_filtered_file_paths(self, target_candidate=None, target_env=None):
         """
 
         :param target_candidate:
@@ -115,7 +116,7 @@ class FEUtils():
                         outerArr.append(innerArr)
         return outerArr
 
-    def filePaths_agent(self, target_candidate=None, target_env=None):
+    def get_filtered_file_paths_agent(self, target_candidate=None, target_env=None):
         """
 
         :param target_env:
@@ -168,3 +169,71 @@ class FEUtils():
 
         return outerArr
 
+
+class DataHandler():
+
+    def __init__(self, group=None, exp=None, iter=0):
+        self._group = group if group is not None else ''
+        self._exp = exp if exp is not None else ''
+        self._iter = iter
+        self._init_root_path()
+
+    def _init_root_path(self):
+        self.root_path = os.path.join(config.OUT_PATH, self._group, '%s-%d' % (self._exp, self._iter))
+
+    def get_grid_name(self, presence=True, doctor=True, agent=False, phases=None, classifier='RF'):
+        pres = 'presence' if presence else 'copresence'
+        subject = 'doctor' if doctor else ''
+        subject = subject + ('agent' if agent else '')
+        if phases is None or (phases is not None and type(phases) == tuple):
+            if phases in [None, (0, 1, 0)]:
+                ph = 'nophase'
+            else:
+                ph = '%02d%02d%02d' % (phases[0] * 100, phases[1] * 100, phases[2] * 100)
+        else:
+            ph = phases
+        return "%s_%s_%s_%s" % (pres, subject, ph, classifier)
+
+    def save_grid(self, grid, folder, presence=True, doctor=True, agent=False, phases=None, classifier='RF'):
+        name = "grid_%s" % (self.get_grid_name(presence, doctor, agent, phases, classifier))
+        return self.save_obj(grid, folder, name)
+
+    def load_grid(self, folder, presence=True, doctor=True, agent=False, phases=None, classifier='RF'):
+        name = "grid_%s" % (self.get_grid_name(presence, doctor, agent, phases, classifier))
+        return self.load_obj(folder, name)
+
+    def save_obj(self, obj, folder, name):
+        """
+        Saves an object to a file with pickle dump (under root_path folder, under 'folder', with name 'name'.pkl).
+        Makes folders accordingly if they do not exist.
+        """
+        try:
+            file_path = os.path.join(self.root_path, folder, name + '.pkl')
+            if not os.path.exists(os.path.dirname(file_path)): os.makedirs(os.path.dirname(file_path))
+            f_obj = open(file_path, 'wb')
+            pickle.dump(obj, f_obj)
+            f_obj.close()
+        except Exception as e:
+            print('Could not save file %s' % (file_path))
+            print(e)
+            return False
+        return True
+
+    def load_obj(self, folder, name):
+        try:
+            file_path = os.path.join(self.root_path, folder, name + '.pkl')
+            f_obj = open(file_path, 'rb')
+            obj = pickle.load(f_obj)
+            f_obj.close()
+        except Exception:
+            print('file does not yet exist %s' % file_path)
+            return None
+        return obj
+
+    def save_fig(self, plt, title):
+        try:
+            path = os.path.join(self.root_path, 'figures', title + '.png')
+            if not os.path.exists(os.path.dirname(path)): os.makedirs(os.path.dirname(path))
+            plt.savefig(path, bbox_inches="tight")
+        except Exception as e:
+            print('Could not save figure %s' % path)
