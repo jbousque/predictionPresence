@@ -1,10 +1,13 @@
 import numpy as np
 import sys
+import math
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Pair():
-    featureValue = None
-    classValue = None
+    featureValue = 0.0
+    classValue = 0
 
     def __init__(self, suppliedFeatureValue, suppliedClassValue):
         self.featureValue = float(suppliedFeatureValue)
@@ -42,9 +45,11 @@ class MdlDiscretizer:
         :param suppliedClassValues:
         :param suppliedNumClasses:
         """
+        logger.debug('__init__(suppliedFeatureValues=%s, suppliedClassValues=%s, suppliedNumClasses=%d)' % (suppliedFeatureValues, suppliedClassValues, suppliedNumClasses))
         self.pairVector = [] #Pair[suppliedFeatureValues.size()];
-        for i in np.arrange(len(suppliedFeatureValues)):
-            self.pairVector.append(Pair(suppliedFeatureValues[i], suppliedClassValues[i]))
+        for i in np.arange(len(suppliedFeatureValues)):
+            self.pairVector.append(Pair(float(suppliedFeatureValues[i]), int(suppliedClassValues[i])))
+            logger.debug("__init__ Pair %f %d" % (float(suppliedFeatureValues[i]), suppliedClassValues[i]))
         self.pairVector = sorted(self.pairVector)
         self.numClasses = suppliedNumClasses
         self.acceptedCutPoints = []
@@ -53,7 +58,7 @@ class MdlDiscretizer:
         self.computePossibleCutPoints()
 
         if not len(self.possibleCutPoints) == 0 :
-            self.recursiveMDLDiscretization(0, self.pairVector.length - 1)
+            self.recursiveMDLDiscretization(0, len(self.pairVector) - 1)
 
         if not len(self.acceptedCutPoints) == 0:
             self.acceptedCutPoints = sorted(self.acceptedCutPoints)
@@ -66,23 +71,26 @@ class MdlDiscretizer:
 
         :return:
         """
+        logger.debug('computePossibleCutPoints()')
         previousValue = self.pairVector[0].getFeatureValue()
-        previousClassSet = self.getClassList(0);
-        currentClassSet = []
+        previousClassSet = self.getClassList(0)
 
         for i in np.arange(1, len(self.pairVector)):
             currentValue = self.pairVector[i].getFeatureValue()
+            logger.debug('computePossibleCutPoints: currentValue %f previousValue %f' % (currentValue, previousValue))
             if currentValue != previousValue:
-                currentClassSet = self.getClassList(i);
-
+                currentClassSet = self.getClassList(i)
+                logger.debug('computePossibleCutPoints: a=%d, b=%d, c=%d, d=%d' % (len(previousClassSet), len(currentClassSet),
+                    previousClassSet[0], currentClassSet[0]))
                 if ((len(previousClassSet) > 1) or (len(currentClassSet) > 1) or (
                     previousClassSet[0] != currentClassSet[0])):
+                    logger.debug('computePossibleCutPoints: adding cut point %f' % ((currentValue + previousValue) / 2.0))
                     self.possibleCutPoints.append(float((currentValue + previousValue) / 2.0))
+                    logger.debug('computePossibleCutPoints: adding cut point idx %d' % (i-1))
                     self.possibleCutPointsIdxInPairVector.append(i - 1)
 
                 previousClassSet = currentClassSet
                 previousValue = currentValue
-
 
     def getClassList(self, index):
         """
@@ -90,6 +98,7 @@ class MdlDiscretizer:
         :param index:
         :return:
         """
+        logger.debug('getClassList(index=%d)' % index)
         foundClasses = []
         foundClasses.append(self.pairVector[index].getClassValue())
         featureValue = self.pairVector[index].getFeatureValue()
@@ -115,27 +124,26 @@ class MdlDiscretizer:
         :param upperIdx:
         :return:
         """
-
+        logger.debug('recursiveMDLDiscretization(lowerIdx=%d, upperIdx=%d)' % (lowerIdx, upperIdx))
         lowerCutPointIdx = 0
         upperCutPointIdx = 0
         foundLower = False
 
         for i in np.arange(len(self.possibleCutPointsIdxInPairVector)):
-            if ( int(self.possibleCutPointsIdxInPairVector.get(i)) + 1 > lowerIdx) \
-                    and (int(self.possibleCutPointsIdxInPairVector.get(i)) + 1 < upperIdx) :
-                if (foundLower):
+            if  int(self.possibleCutPointsIdxInPairVector[i]) + 1 > lowerIdx \
+                    and int(self.possibleCutPointsIdxInPairVector[i]) + 1 < upperIdx :
+                if foundLower:
                     upperCutPointIdx = i
                 else:
                     lowerCutPointIdx = i
-
                     upperCutPointIdx = i
                     foundLower = True
-
+        logger.debug('recursive: foundLower %s' % str(foundLower))
         currentBestCutPoint = sys.float_info.min
         currentBestInfo = sys.float_info.min
 
         for j in np.arange(lowerCutPointIdx, upperCutPointIdx+1):
-            limit = int(self.possibleCutPointsIdxInPairVector.get(j))
+            limit = int(self.possibleCutPointsIdxInPairVector[j])
 
             PartitionInformation = float()
             LeftInformation = float()
@@ -151,22 +159,24 @@ class MdlDiscretizer:
 
             InformationGain = PartitionInformation[0] - TrialPartitionEntropy
 
-            InformationThreshold = np.log(length - 1) / np.log(2.0) + np.log(np.pow(3.0, PartitionInformation[1]) - 2.0) / np.log(2.0)
+            InformationThreshold = np.log(length - 1) / np.log(2.0) + np.log(math.pow(3.0, PartitionInformation[1]) - 2.0) / np.log(2.0)
             InformationThreshold -= PartitionInformation[0] * PartitionInformation[1]
             InformationThreshold += LeftInformation[0] * LeftInformation[1] + RightInformation[0] * RightInformation[1]
             InformationThreshold /= length
-
+            logger.debug('recursive: InformationThreshold=%f, InformationGain=%f, currentBestInfo=%s'
+                         % (InformationThreshold, InformationGain,currentBestInfo))
             if (InformationGain > InformationThreshold) and (InformationGain > currentBestInfo):
-                currentBestCutPoint = float(self.possibleCutPoints.get(j))
+                currentBestCutPoint = float(self.possibleCutPoints[j])
                 currentBestInfo = InformationGain
 
         if currentBestInfo == sys.float_info.min:
             found = False
         else:
+            logger.debug('recursive: adding accepted cut point %f' % currentBestCutPoint)
             self.acceptedCutPoints.append(float(currentBestCutPoint))
 
-            cutPointIdxInPairVector = int(self.possibleCutPointsIdxInPairVector.get(self.possibleCutPoints
-                                                                                    .index(float(currentBestCutPoint))))
+            cutPointIdxInPairVector = int(self.possibleCutPointsIdxInPairVector[self.possibleCutPoints
+                                                                                    .index(float(currentBestCutPoint))])
 
             while self.pairVector[cutPointIdxInPairVector].getFeatureValue() == self.pairVector[
                 (cutPointIdxInPairVector + 1)].getFeatureValue():
@@ -182,9 +192,10 @@ class MdlDiscretizer:
                 findCutpoint = self.possibleCutPoints.index(float(currentBestCutPoint))
             except Exception:
                 findCutpoint = -1
-            if findCutpoint < self.possibleCutPoints.size() - 1:
+            if findCutpoint < len(self.possibleCutPoints) - 1:
                 self.recursiveMDLDiscretization(cutPointIdxInPairVector + 1, upperIdx)
             found = True
+        logger.info('recursiveMDLDiscretization returns %s' % str(found))
         return found
 
 
@@ -208,7 +219,7 @@ class MdlDiscretizer:
         N = upperBound - lowerBound + 1
         info = N * np.log(N)
         counter = 0
-        for j in np.arange(0, ClassFrequencies.length):
+        for j in np.arange(0, len(ClassFrequencies)):
             if (ClassFrequencies[j] != 0):
                 info -= ClassFrequencies[j] * np.log(ClassFrequencies[j])
                 counter += 1
