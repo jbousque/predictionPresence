@@ -222,6 +222,7 @@ class DataHandler():
     def load_obj(self, folder, name):
         try:
             file_path = os.path.join(self.root_path, folder, name + '.pkl')
+            print('load_obj: opening %s' % file_path)
             f_obj = open(file_path, 'rb')
             obj = pickle.load(f_obj)
             f_obj.close()
