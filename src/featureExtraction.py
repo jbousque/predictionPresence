@@ -19,7 +19,7 @@ import config
 from feutils import FEUtils
 from entropy import videoEntropyMatrix
 from ipuseg import IPUdriver
-from pos import POSfeatures, avgSentenceLength
+from pos import POSfeatures, avgSentenceLength, answerDelays
 from wavSplitter import duration
 
 logger = logging.getLogger(__name__)
@@ -128,27 +128,32 @@ def computeIPUlengths(pathsList, splitratios, isSubject=True):
                 except Exception:
                     logger.exception("computeIPUlengths() failed for %s / %s / %s", envType, candidate, path)
 
+def computeAnswerDelays(pathsList, splitratios, isSubject=True):
+    crashlist = []
+    for paths in pathsList:
+        for path in paths:
+            fileName, fileext = os.path.splitext(path)
+            if (fileext == ".wav" and not any(crashpath in path for crashpath in crashlist)):
+                #envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(path))))
+                #candidate = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
+                candidate, envType = feu.extract_info(path)
+                try:
+                    entArr = answerDelays(path, splitratios, isSubject)
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "answers.txt")
+                    if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
+                    logger.debug("computeIPUlengths: saving %s", dest)
+                    np.savetxt(dest, entArr)
+                except Exception:
+                    logger.exception("computeAnswerDelays() failed for %s / %s / %s", envType, candidate, path)
+
+
+
 
 def sum_nan_arrays(a, b):
     # from https://stackoverflow.com/questions/42209838/treat-nan-as-zero-in-numpy-array-summation-except-for-nan-in-all-arrays
     ma = np.isnan(a)
     mb = np.isnan(b)
     return np.where(ma & mb, np.NaN, np.where(ma, 0, a) + np.where(mb, 0, b))
-
-"""
-Traceback (most recent call last):
-  File "featureExtraction.py", line 1133, in <module>
-    main(sys.argv)
-  File "featureExtraction.py", line 1124, in main
-    computeFeatures(pathsList, splitratios, isSubject)
-  File "featureExtraction.py", line 879, in computeFeatures
-    removeNaN(splitratios, isSubject)
-  File "featureExtraction.py", line 251, in removeNaN
-    sums = sum_nan_arrays(sums, np.loadtxt(completePath))
-  File "featureExtraction.py", line 228, in sum_nan_arrays
-    return np.where(ma & mb, np.NaN, np.where(ma, 0, a) + np.where(mb, 0, b))
-ValueError: operands could not be broadcast together with shapes (15,3) (15,)
-"""
 
 def updateFrequencies(current, newArr):
     # not an optimal solution, attempt improvement
@@ -815,6 +820,7 @@ def computeFeatures(pathsList, splitratios, isSubject=True):
     computeEntropies(pathsList, splitratios, isSubject)
     removeNaN(splitratios, isSubject)
     computeIPUlengths(pathsList, splitratios, isSubject)
+    computeAnswerDelays(pathsList, splitratios, isSubject)
 
 
 def computeAveragedMatrix(dataFile, outputFile):
@@ -1039,8 +1045,9 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                     file.write(filedata)
                 file.close()
 
-                from agent import generate_xra
+                from agent import generate_xra, vectorize_agent_speech
                 generate_xra(texts, times, wavs, os.path.join(tmp_dir, 'agent.xra'))
+                vectorize_agent_speech(texts, times, wavs, os.path.join(tmp_dir, 'agent_speech_vectors.pkl'))
 
 
             except Exception as e:

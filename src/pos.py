@@ -370,3 +370,67 @@ def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
     logger.debug('POSfeatures returns %s', str(features))
 
     return features
+
+
+def answerDelays(path, splitratios, isSubject):
+    if isSubject:
+        BD = 'BD'
+        ED = 'ED'
+        BS = 'BA'
+        ES = 'EA'
+    else:
+        BD = 'BA'
+        ED = 'EA'
+        BS = 'BD'
+        ES = 'ED'
+
+    candidate, envType = feu.extract_info(path)
+    import pickle
+    [agent_times, agent_markers] = pickle.load(os.path.join(config.TMP_PATH, candidate, envType, 'agent_speech_vectors.pkl'))
+
+    subject_paths = feu.get_filtered_file_paths(candidate, envType)
+    xra_path = None
+    for potential_xra_path in subject_paths[0]:
+        _, extXra = os.path.splitext(potential_xra_path)
+        if (extXra == ".xra"):
+            xra_path = potential_xra_path
+    if xra_path is not None:
+        logger.debug('answerDelays: found doctor transcription %s' % xra_path)
+        fileName, fileExt = os.path.splitext(xra_path)
+        elanFile = os.path.join(fileName, '-palign.eaf')
+        logger.debug('answerDelays: opening elan transcription %s' % elanFile)
+        trs = annotationdata.aio.read(elanFile)
+        tier = trs.Find("Activity", case_sensitive=False)
+        doctor_times = []
+        doctor_markers = []
+        for annotation in tier:
+            if(annotation.GetLabel().GetValue() == "speech"):
+                doctor_times.append(annotation.getLocation().GetBeginMidpoint())
+                doctor_times.append(annotation.getLocation().GetEndMidpoint())
+                doctor_markers.append('BD')
+                doctor_markers.append('ED')
+
+        times = np.array(agent_times + doctor_times)
+        markers = np.array(agent_markers + doctor_markers)
+        order_idx = np.argsort(times)
+
+        last_EA = None
+        last_EA_idx = None
+        delays = []
+        delays_B = []
+        for idx in order_idx:
+            if markers[idx] == BA:
+                # new talk
+                last_EA = None
+                last_EA_idx = None
+            if markers[idx] == EA:
+                # last time his talk ended
+                last_EA = times[idx]
+                last_EA_idx = idx
+
+            if markers[idx] == BS and last_EA is not None and delays_B[-1] is not last_EA_idx:
+                delays_B.append(last_EA_idx)
+                delays.append(times[idx] - last_EA)
+
+    logger.debug('answerDelays: return %s' % str(delays))
+    return delays
