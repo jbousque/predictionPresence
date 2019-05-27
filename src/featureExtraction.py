@@ -21,6 +21,7 @@ from entropy import videoEntropyMatrix
 from ipuseg import IPUdriver
 from pos import POSfeatures, avgSentenceLength, answerDelays
 from wavSplitter import duration
+from agent import generate_xra, vectorize_agent_speech
 
 logger = logging.getLogger(__name__)
 
@@ -130,24 +131,25 @@ def computeIPUlengths(pathsList, splitratios, isSubject=True):
 
 def computeAnswerDelays(pathsList, splitratios, isSubject=True):
     crashlist = []
+
     for paths in pathsList:
         for path in paths:
             fileName, fileext = os.path.splitext(path)
-            if (fileext == ".wav" and not any(crashpath in path for crashpath in crashlist)):
-                #envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(path))))
-                #candidate = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
-                candidate, envType = feu.extract_info(path)
-                try:
-                    entArr = answerDelays(path, splitratios, isSubject)
-                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "answers.txt")
-                    if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
-                    logger.debug("computeIPUlengths: saving %s", dest)
-                    np.savetxt(dest, entArr)
-                except Exception:
-                    logger.exception("computeAnswerDelays() failed for %s / %s / %s", envType, candidate, path)
-
-
-
+            if (fileext == ".xra" and not any(
+                    crashpath in path for crashpath in crashlist)):  # and path not in throughList):
+                for wavPath in paths:
+                    _, extWav = os.path.splitext(wavPath)
+                    if (extWav == ".wav"):
+                        try:
+                            candidate, envType = feu.extract_info(path)
+                            entArr = answerDelays(path, wavPath, splitratios, isSubject)
+                            dest = os.path.join(profBCorpusPath, candidate, envType,
+                                                feu.get_featureset_folder_name(isSubject, splitratios), "answers.txt")
+                            if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
+                            logger.debug("computeAnswerDelays: saving %s", dest)
+                            np.savetxt(dest, entArr)
+                        except Exception:
+                            logger.exception("computeAnswerDelays() failed for %s / %s / %s", envType, candidate, path)
 
 def sum_nan_arrays(a, b):
     # from https://stackoverflow.com/questions/42209838/treat-nan-as-zero-in-numpy-array-summation-except-for-nan-in-all-arrays
@@ -815,11 +817,11 @@ def copresenceModels(dataFile):
 
 def computeFeatures(pathsList, splitratios, isSubject=True):
     # Function to call all functions to compute features
-    computePOStags(pathsList, splitratios, isSubject)
-    computeSentenceLengths(pathsList, splitratios, isSubject)
-    computeEntropies(pathsList, splitratios, isSubject)
-    removeNaN(splitratios, isSubject)
-    computeIPUlengths(pathsList, splitratios, isSubject)
+    #computePOStags(pathsList, splitratios, isSubject)
+    #computeSentenceLengths(pathsList, splitratios, isSubject)
+    #computeEntropies(pathsList, splitratios, isSubject)
+    #removeNaN(splitratios, isSubject)
+    #computeIPUlengths(pathsList, splitratios, isSubject)
     computeAnswerDelays(pathsList, splitratios, isSubject)
 
 
@@ -976,6 +978,12 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                         times.append(times[-1] + len(wavfiles[len(times)]) + 1000)
                         texts.append(' ')
 
+                # retrieve and replace times by correctly aligned times from out_record (there are as many times as wavs
+                # so previous alignment with texts is ok and we just have to replace time steps).
+                out_rec_df = pd.read_csv(out_rec, sep='\t')
+                times = out_rec_df[out_rec_df['audio'] != -1][['chrono']].T.values[0] * 1000
+                logger.debug('preprocess_agent_data: aligned times from out_record %s' % str(times))
+
                 wavs = []
                 for wavfile in wavfiles:
                     logger.debug("loading wav %s", os.path.join(wavdir, wavfile))
@@ -1045,7 +1053,6 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                     file.write(filedata)
                 file.close()
 
-                from agent import generate_xra, vectorize_agent_speech
                 generate_xra(texts, times, wavs, os.path.join(tmp_dir, 'agent.xra'))
                 vectorize_agent_speech(texts, times, wavs, os.path.join(tmp_dir, 'agent_speech_vectors.pkl'))
 

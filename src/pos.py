@@ -8,6 +8,10 @@ import numpy as np
 import config
 import logging
 import shutil
+import pickle
+
+from pandas import IntervalIndex
+
 
 from feutils import FEUtils
 
@@ -250,25 +254,24 @@ def avgSentenceLength(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
     #numWords : 3-element array storing the number of words in each phase
     numWords = np.zeros(3)
 
+    # temporary variable remembering beginning time of current sentence
+    sentenceBegin = -1
+
+    intervals = IntervalIndex.from_tuples([(0, splitPoint_1), (splitPoint_1, splitPoint_2), (splitPoint_2, duration)])
+
     for annotation in tier:
         if(annotation.GetLabel().GetValue() == "punctuation"):
-            if (annotation.GetLocation().GetBeginMidpoint() < splitPoint_1):
-                sentenceCount[0] += 1
-                numWords[0] = numWords[0] + sentenceLength
-                sentenceLength = 0
-
-            elif (annotation.GetLocation().GetBeginMidpoint() < splitPoint_2):
-                sentenceCount[1] += 1
-                numWords[1] = numWords[1] + sentenceLength
-                sentenceLength = 0
-
-            else:
-                sentenceCount[2] += 1
-                numWords[2] = numWords[2] + sentenceLength
-                sentenceLength = 0
+            # retrieve in which phase this avg sentence length should be added
+            idx = get_interval(intervals, sentenceBegin, annotation.GetLocation().GetBeginMidpoint())
+            sentenceCount[idx] += 1
+            numWords[idx] = numWords[idx] + sentenceLength
+            sentenceLength = 0
+            sentenceBegin = -1
 
         else:
             sentenceLength += 1
+            if sentenceBegin == -1:
+                sentenceBegin = annotation.getLocation().getBeginMidpoint()
 
     #avgLengths : 3-element array storing the average sentence length in each phase
     avgLengths = np.zeros(3)
@@ -371,66 +374,126 @@ def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 
     return features
 
+def get_interval(intervals, begin, end):
+    return intervals.get_loc((begin+end) / 2)
 
-def answerDelays(path, splitratios, isSubject):
+def answerDelays(transcriptionFile, wavPath, splitratios, isSubject):
+
+    # BD/ED : begin/end Doctor
+    # BA/ES : begin/end Agent
     if isSubject:
         BD = 'BD'
         ED = 'ED'
-        BS = 'BA'
-        ES = 'EA'
+        BA = 'BA'
+        EA = 'EA'
     else:
         BD = 'BA'
         ED = 'EA'
-        BS = 'BD'
-        ES = 'ED'
+        BA = 'BD'
+        EA = 'ED'
 
-    candidate, envType = feu.extract_info(path)
-    import pickle
-    [agent_times, agent_markers] = pickle.load(os.path.join(config.TMP_PATH, candidate, envType, 'agent_speech_vectors.pkl'))
+    candidate, envType = feu.extract_info(wavPath)
+    segment = AudioSegment.from_file(wavPath)
+    duration = segment.duration_seconds * 1000
+    splitPoint_1 = splitratios[0] * duration
+    splitPoint_2 = (splitratios[0] + splitratios[1]) * duration
+    intervals = IntervalIndex.from_tuples([(0, splitPoint_1), (splitPoint_1, splitPoint_2), (splitPoint_2, duration)])
+    logger.debug('answerDelays: split intervals %s' % str(intervals))
 
-    subject_paths = feu.get_filtered_file_paths(candidate, envType)
-    xra_path = None
-    for potential_xra_path in subject_paths[0]:
-        _, extXra = os.path.splitext(potential_xra_path)
-        if (extXra == ".xra"):
-            xra_path = potential_xra_path
-    if xra_path is not None:
-        logger.debug('answerDelays: found doctor transcription %s' % xra_path)
-        fileName, fileExt = os.path.splitext(xra_path)
-        elanFile = os.path.join(fileName, '-palign.eaf')
-        logger.debug('answerDelays: opening elan transcription %s' % elanFile)
-        trs = annotationdata.aio.read(elanFile)
-        tier = trs.Find("Activity", case_sensitive=False)
-        doctor_times = []
-        doctor_markers = []
-        for annotation in tier:
-            if(annotation.GetLabel().GetValue() == "speech"):
-                doctor_times.append(annotation.getLocation().GetBeginMidpoint())
-                doctor_times.append(annotation.getLocation().GetEndMidpoint())
-                doctor_markers.append('BD')
-                doctor_markers.append('ED')
+    f_agent = open(os.path.join(config.TMP_PATH, candidate, envType, 'agent_speech_vectors.pkl'))
+    [agent_times, agent_markers] = pickle.load(f_agent)
 
+    # retrieve aligned elan file from doctor, if any
+    subject_paths = feu.get_filtered_file_paths([candidate], [envType])
+    subject_wav_path = None
+    for potential_subject_wav_path in subject_paths[0]:
+        _, ext = os.path.splitext(potential_subject_wav_path)
+        if (ext == ".wav"):
+            subject_wav_path = potential_subject_wav_path
+    if subject_wav_path is not None:
+        logger.debug('answerDelays: found doctor wav %s' % subject_wav_path)
+        fileName, fileExt = os.path.splitext(subject_wav_path)
+        output = fileName + '-doctor-speech.pkl'
+        logger.debug('answerDelays: checking %s' % output)
+        if not os.path.isfile(output):
+            elanFile = fileName + '-palign.eaf'
+            logger.debug('answerDelays: opening elan transcription %s' % elanFile)
+            trs = annotationdata.aio.read(elanFile)
+            tier = trs.Find("Activity", case_sensitive=False)
+            doctor_times = []
+            doctor_markers = []
+            for annotation in tier:
+                if(annotation.GetLabel().GetValue() == "speech"):
+                    logger.debug('answerDelays: annotation %s' % str(annotation))
+                    object_methods = [method_name for method_name in dir(annotation) if callable(getattr(annotation, method_name))]
+                    logger.debug('methods %s ' % str(object_methods))
+                    doctor_times.append(int(annotation.GetLocation().GetBeginMidpoint() * 1000))
+                    doctor_times.append(int(annotation.GetLocation().GetEndMidpoint() * 1000))
+                    doctor_markers.append('BD')
+                    doctor_markers.append('ED')
+            if doctor_times and doctor_markers:
+                f_output = open(output, 'w')
+                obj = [doctor_times, doctor_markers]
+                pickle.dump(obj, f_output)
+                f_output.close()
+
+        else:
+            f_output = open(output, 'r')
+            obj = pickle.load(f_output)
+            doctor_times = obj[0]
+            doctor_markers = obj[1]
+            f_output.close()
+
+        logger.debug('answerDelays: subject times %s' % (str(doctor_times)))
+        logger.debug('answerDelays: subject markers %s' % (str(doctor_markers)))
+        logger.debug('answerDelays: agent times %s' % (str(agent_times)))
+        logger.debug('answerDelays: agent markers %s' % (str(agent_markers)))
         times = np.array(agent_times + doctor_times)
         markers = np.array(agent_markers + doctor_markers)
         order_idx = np.argsort(times)
+        logger.debug('answerDelays: order %s' % str(order_idx))
+        logger.debug('answerDelays: all ordered times %s' % str(times[order_idx]))
+        logger.debug('answerDelays: all ordered markers %s' % str(markers[order_idx]))
 
         last_EA = None
         last_EA_idx = None
-        delays = []
+        delays = [[] for _ in np.arange(len(splitratios))]
         delays_B = []
-        for idx in order_idx:
+        for i, idx in enumerate(order_idx):
+            logger.debug('answerDelays: #%d idx %d time %s marker %s last_EA %s last_EA_idx %s'
+                         % (i, idx, str(times[idx]), str(markers[idx]), str(last_EA), str(last_EA_idx)))
             if markers[idx] == BA:
+                logger.debug('answerDelays: (%s) new talk at idx %d time %s' % (BA, idx, str(times[idx])))
                 # new talk
                 last_EA = None
                 last_EA_idx = None
             if markers[idx] == EA:
+                logger.debug('answerDelays: (%s) end of talk at idx %d time %s' % (EA, idx, str(times[idx])))
                 # last time his talk ended
                 last_EA = times[idx]
                 last_EA_idx = idx
 
-            if markers[idx] == BS and last_EA is not None and delays_B[-1] is not last_EA_idx:
-                delays_B.append(last_EA_idx)
-                delays.append(times[idx] - last_EA)
-
+            # answer ?
+            if markers[idx] == BD:
+                # occurred end of other speaker segment
+                if last_EA is not None:
+                    # this is the 'first' answer following this other speaker segment
+                    if not delays_B or delays_B[-1] is not last_EA_idx:
+                        logger.debug('answerDelays: (%s) new answer (last_EA %s, delays_B[-1] %s, last_EA_idx %s'
+                                     % (BD, str(last_EA), str(delays_B[-1]) if delays_B else '[]', str(last_EA_idx)))
+                        # actor ended speech at last_EA and answer came at times[idx]
+                        delays_B.append(last_EA_idx)
+                        it = get_interval(intervals, last_EA, times[idx])
+                        delays[it].append(times[idx] - last_EA)
+                else:
+                    # answer came before other speaker finished his talk segment --> 0
+                    if delays_B:
+                        # delay is 0, end of previous segment not reached, so consider current index
+                        # (BD) as time of previous end of talk segment
+                        delays_B.append(idx)
+                        it = get_interval(intervals, times[idx], times[idx])
+                        delays[it].append(0)
+            logger.debug('answerDelays: update delays_B %s, delays %s' % (str(delays_B), str(delays)))
+    delays = np.nan_to_num([np.mean(item) for item in delays])
     logger.debug('answerDelays: return %s' % str(delays))
     return delays

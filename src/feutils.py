@@ -237,4 +237,5 @@ class DataHandler():
             if not os.path.exists(os.path.dirname(path)): os.makedirs(os.path.dirname(path))
             plt.savefig(path, bbox_inches="tight")
         except Exception as e:
+            print(e)
             print('Could not save figure %s' % path)
