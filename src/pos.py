@@ -486,13 +486,11 @@ def answerDelays(transcriptionFile, wavPath, splitratios, isSubject):
                         it = get_interval(intervals, last_EA, times[idx])
                         delays[it].append(times[idx] - last_EA)
                 else:
-                    # answer came before other speaker finished his talk segment --> 0
-                    if delays_B:
-                        # delay is 0, end of previous segment not reached, so consider current index
-                        # (BD) as time of previous end of talk segment
-                        delays_B.append(idx)
-                        it = get_interval(intervals, times[idx], times[idx])
-                        delays[it].append(0)
+                    # delay is 0, end of previous segment not reached, so consider current index
+                    # (BD) as time of previous end of talk segment
+                    delays_B.append(idx)
+                    it = get_interval(intervals, times[idx], times[idx])
+                    delays[it].append(0)
             logger.debug('answerDelays: update delays_B %s, delays %s' % (str(delays_B), str(delays)))
     delays = np.nan_to_num([np.mean(item) for item in delays])
     logger.debug('answerDelays: return %s' % str(delays))
