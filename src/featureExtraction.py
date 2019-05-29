@@ -284,6 +284,7 @@ def prepareMatrix(splitratios, isSubject=True):
                 posFile = os.path.join(dirs, "pos.txt")
                 slengthFile = os.path.join(dirs, "slength.txt")
                 ipuFile = os.path.join(dirs, "ipu.txt")
+                answersFile = os.path.join(dirs, 'answers.txt')
 
                 envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(posFile))))
                 candidate = os.path.basename(
@@ -298,6 +299,8 @@ def prepareMatrix(splitratios, isSubject=True):
                     logger.warn('prepareMatrix: missing sentence lengths file %s for %s/%s', slengthFile, candidate, envType)
                 elif not os.path.isfile(ipuFile):
                     logger.warn('prepareMatrix: missing IPUs file %s for %s/%s', ipuFile, candidate, envType)
+                elif not os.path.isfile(answersFile):
+                    logger.warn('prepareMatrix: missing answers delays file %s for %s/%s' % (answersFile, candidate, envType))
                 else:
                     # print "in condition"
                     expert = 1
@@ -349,8 +352,12 @@ def prepareMatrix(splitratios, isSubject=True):
                     posMat = np.loadtxt(posFile)
                     slengthMat = np.loadtxt(slengthFile)
                     ipuMat = np.loadtxt(ipuFile)
+                    answersMat = np.loadtxt(answersFile)
                     # print ipuMat
-                    combinedMat = np.vstack((compressedEntMat, posMat, slengthMat, ipuMat))
+                    combinedMat = np.vstack((compressedEntMat, posMat, slengthMat, ipuMat, answersMat))
+                    logger.debug('answersMat %s' % answersMat)
+                    logger.debug('ipuMat %s' % ipuMat)
+                    logger.debug('combined mat %s' % combinedMat)
 
                     adjecPOSVec = posMat[0, :]
                     advPOSVec = posMat[1, :]
@@ -420,10 +427,12 @@ def prepareMatrix(splitratios, isSubject=True):
                  len(pScoreVec), len(classVec), len(copScoreVec), len(copClassVec))
     classes = np.stack((np.transpose(durationVec), np.transpose(pScoreVec), np.transpose(classVec),
                         np.transpose(copScoreVec), np.transpose(copClassVec)), axis=-1)
-    logger.debug('prepareMatrix: featureMat shape %s', len(featureMat))
-    logger.debug('prepareMatrix: classes shape %s', len(classes))
+    logger.debug('prepareMatrix: featureMat shape %s' % str(featureMat.shape))
+    logger.debug('prepareMatrix: classes shape %s' % str(classes.shape))
+    logger.debug('prepareMatrix: rat1Vec shape %s' % str(rat1Vec.shape))
+    logger.debug('prepareMatrix: rat2Vec shape %s' % str(rat2Vec.shape))
     mat = np.hstack((featureMat, rat1Vec, rat2Vec, classes))
-    logger.debug('prepareMatrix: mat shape %s', str(mat.shape))
+    logger.debug('prepareMatrix: mat shape %s' % str(mat.shape))
     pdDump = pd.DataFrame(mat)
     dumpPath = os.path.join(os.path.dirname(profBCorpusPath), config.FEATURES_MATRIX
                             + feu.get_featureset_folder_name(isSubject, splitratios) + '.xlsx')
@@ -442,7 +451,8 @@ def prepareMatrix(splitratios, isSubject=True):
                       'Freq_Preposition_Begin', 'Freq_Preposition_Mid', 'Freq_Preposition_End', 'Freq_Pronoun_Begin',
                       'Freq_Pronoun_Mid', 'Freq_Pronoun_End', 'Freq_Verb_Begin', 'Freq_Verb_Mid', 'Freq_Verb_End',
                       'Avg_SentenceLength_Begin', 'Avg_SentenceLength_Mid', 'Avg_SentenceLength_End',
-                      'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Ratio1_Begin', 'Ratio1_Mid',
+                      'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Avg_AnswersDelay_Begin',
+                      'Avg_AnswersDelay_Mid', 'Avg_AnswersDelay_End', 'Ratio1_Begin', 'Ratio1_Mid',
                       'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score',
                       'Presence Class', 'Co-presence Score', 'Co-presence Class']
     # compute average entropies columns
@@ -465,7 +475,8 @@ def prepareMatrix(splitratios, isSubject=True):
                       'Freq_Preposition_Begin', 'Freq_Preposition_Mid', 'Freq_Preposition_End', 'Freq_Pronoun_Begin',
                       'Freq_Pronoun_Mid', 'Freq_Pronoun_End', 'Freq_Verb_Begin', 'Freq_Verb_Mid', 'Freq_Verb_End',
                       'Avg_SentenceLength_Begin', 'Avg_SentenceLength_Mid', 'Avg_SentenceLength_End',
-                      'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Ratio1_Begin', 'Ratio1_Mid',
+                      'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Avg_AnswersDelay_Begin',
+                      'Avg_AnswersDelay_Mid', 'Avg_AnswersDelay_End', 'Ratio1_Begin', 'Ratio1_Mid',
                       'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score',
                       'Presence Class', 'Co-presence Score', 'Co-presence Class']]
     pdDump.insert(0, 'Candidate', candidateVec)
@@ -817,11 +828,11 @@ def copresenceModels(dataFile):
 
 def computeFeatures(pathsList, splitratios, isSubject=True):
     # Function to call all functions to compute features
-    #computePOStags(pathsList, splitratios, isSubject)
-    #computeSentenceLengths(pathsList, splitratios, isSubject)
-    #computeEntropies(pathsList, splitratios, isSubject)
-    #removeNaN(splitratios, isSubject)
-    #computeIPUlengths(pathsList, splitratios, isSubject)
+    computePOStags(pathsList, splitratios, isSubject)
+    computeSentenceLengths(pathsList, splitratios, isSubject)
+    computeEntropies(pathsList, splitratios, isSubject)
+    removeNaN(splitratios, isSubject)
+    computeIPUlengths(pathsList, splitratios, isSubject)
     computeAnswerDelays(pathsList, splitratios, isSubject)
 
 
@@ -979,9 +990,11 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                         texts.append(' ')
 
                 # retrieve and replace times by correctly aligned times from out_record (there are as many times as wavs
-                # so previous alignment with texts is ok and we just have to replace time steps).
+                # so previous alignment with texts is ok and we just have to replace time steps). Note: sometimes some
+                # times steps are missing from out_record.
                 out_rec_df = pd.read_csv(out_rec, sep='\t')
-                times = out_rec_df[out_rec_df['audio'] != -1][['chrono']].T.values[0] * 1000
+                new_times = list(out_rec_df[out_rec_df['audio'] != -1][['chrono']].T.values[0] * 1000)
+                times = new_times + [a for a in times[len(new_times):]]
                 logger.debug('preprocess_agent_data: aligned times from out_record %s' % str(times))
 
                 wavs = []
@@ -994,9 +1007,8 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                 # avoid overlaping sounds
                 for idx, wav in enumerate(wavs):
                     if idx > 0:
-                        print("idx %d %d:%s:%d %d:%s:%d " % (
-                        idx, times[idx - 1], texts[idx - 1], len(wavs[idx - 1]),
-                        times[idx], texts[idx], len(wavs[idx])))
+                        print("idx %d %d:%s:%d %d:%s:%d " % (idx, times[idx - 1], texts[idx - 1], len(wavs[idx - 1]),
+                                                             times[idx], texts[idx], len(wavs[idx])))
                         if times[idx] < times[idx - 1] + len(wavs[idx - 1]):
                             times[idx] = times[idx-1]+len(wavs[idx-1]) + 300
                             print("   new time %d" % times[idx])
@@ -1011,16 +1023,16 @@ def preprocess_agent_data(target_candidate=None, target_env=None):
                 new_wav_file = os.path.join(tmp_dir, 'agent_sound.wav')
                 newsound.export(new_wav_file, format='wav')
 
-                # generate CSV file
-                #csvfile = open(os.path.join(tmp_dir, 'agent_transcription.csv'), 'wb')
-                #csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-                #for i, (time, text) in enumerate(zip(times, texts)):
-                #    if i < len(wavfiles):
-                #        print(i, time, text)
-                #        tb = "{0:.2f}".format(time / 1000)
-                #        te = "{0:.2f}".format((time + len(wavs[i])) / 1000)
-                #        csvwriter.writerow(['ASR-Transcription', tb, te, text.encode('utf8')])
-                #csvfile.close()
+                """# generate CSV file
+                csvfile = open(os.path.join(tmp_dir, 'agent_transcription.csv'), 'wb')
+                csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+                for i, (time, text) in enumerate(zip(times, texts)):
+                    if i < len(wavfiles):
+                        print(i, time, text)
+                        tb = "{0:.2f}".format(time / 1000)
+                        te = "{0:.2f}".format((time + len(wavs[i])) / 1000)
+                        csvwriter.writerow(['ASR-Transcription', tb, te, text.encode('utf8')])
+                csvfile.close()"""
 
                 # todo use sppas to convert csv file + wav to xra file
                 sppas_cmd = os.path.join(config.SPPAS_2_PATH, 'sppas', 'bin', 'fillipus.py')
