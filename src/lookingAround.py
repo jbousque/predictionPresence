@@ -15,7 +15,7 @@ class Coordinate:
     def dictArray(self):                            #returns a dictionary of arrays where each array corersponds to the time series of a subject coordinate point
         for i in range(self.allLabels.shape[0]):
             if(self.allLabels[i] in self.subjectLabels):
-                self.d[allLabels[i]] = self.coordArr[:, i]
+                self.d[self.allLabels[i]] = self.coordArr[:, i]
 
     def filteredCoords(self):
         i = 0
@@ -24,11 +24,12 @@ class Coordinate:
                 self.filtArr[:, i] = self.d[label]  
 
     def graphCoord(self, label, dict):
-        pyplot.plot(d[label])
+        pyplot.plot(self.d[label])
         pyplot.ylabel(label)
         pyplot.show()
 
 c = Coordinate("coordLabels", "subjectLabels", "CasqueP1")
-c.dictArray()
+myd = c.dictArray()
 print c.allLabels
 print c.d
+c.graphCoord('HeadSubject_posx', myd)
