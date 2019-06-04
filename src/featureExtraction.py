@@ -103,7 +103,7 @@ def computeEntropies(pathsList, splitratios, isSubject=True):
                 logger.debug("computeEntropies: envTyp "+envType)
                 logger.debug("computeEntropies: candidate " + candidate)
                 try:
-                    entArr = videoEntropyMatrix(path, splitratios)
+                    entArr = videoEntropyMatrix(path, splitratios, isSubject)
                     dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "entropy.txt")
                     if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                     np.savetxt(dest, entArr)
@@ -828,12 +828,12 @@ def copresenceModels(dataFile):
 
 def computeFeatures(pathsList, splitratios, isSubject=True):
     # Function to call all functions to compute features
-    computePOStags(pathsList, splitratios, isSubject)
-    computeSentenceLengths(pathsList, splitratios, isSubject)
+    #computePOStags(pathsList, splitratios, isSubject)
+    #computeSentenceLengths(pathsList, splitratios, isSubject)
     computeEntropies(pathsList, splitratios, isSubject)
     removeNaN(splitratios, isSubject)
-    computeIPUlengths(pathsList, splitratios, isSubject)
-    computeAnswerDelays(pathsList, splitratios, isSubject)
+    #computeIPUlengths(pathsList, splitratios, isSubject)
+    #computeAnswerDelays(pathsList, splitratios, isSubject)
 
 
 def computeAveragedMatrix(dataFile, outputFile):

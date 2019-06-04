@@ -136,7 +136,7 @@ def targetEntropies(target, coordsDic):
     return np.array([entropy(xy_array), entropy(yz_array), entropy(zx_array)])
 
 
-def segmentEntropyMatrix(coords, type="subject"):
+def segmentEntropyMatrix(coords, isSubject):
     """
     takes the coordinate array of one segment and returns the corresponding 15 x 1 entropy matrix, with the
     first 5 values representing the five entropy values of the first plane, followed by 5 valuesfor the second plane,
@@ -145,10 +145,14 @@ def segmentEntropyMatrix(coords, type="subject"):
     :return:
     """
     allLabels = labels("coordLabels")
+    if isSubject:
+        type='subject'
+    else:
+        type='agent'
     typeLabels = labels("{type}Labels".format(type=type))
     coordsDic = filteredDict(coords, allLabels, typeLabels)
 
-    if type == 'subject':
+    if isSubject:
         featMat = targetEntropies("HeadSubject", coordsDic)
         featMat = np.vstack([featMat, targetEntropies("LeftWristSubject", coordsDic)])
         featMat = np.vstack([featMat, targetEntropies("RightWristSubject", coordsDic)])
@@ -166,24 +170,24 @@ def segmentEntropyMatrix(coords, type="subject"):
     featMat = np.reshape(featMat, 15)
     return featMat
 
-def videoEntropyMatrix(fileName, splitRatios):
+def videoEntropyMatrix(fileName, splitRatios, isSubject):
     coordArr = coordArray(fileName)
     splitArr = splitArray(coordArr, splitRatios)
 
     completeEntropyMatrix = np.array([])
 
     if splitArr[0].size > 0:
-        completeEntropyMatrix = segmentEntropyMatrix(splitArr[0])
+        completeEntropyMatrix = segmentEntropyMatrix(splitArr[0], isSubject)
     else:
         completeEntropyMatrix = np.zeros((15))
 
     if splitArr[1].size > 0:
-        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[1])])
+        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[1], isSubject)])
     else:
         completeEntropyMatrix = np.column_stack([completeEntropyMatrix, np.zeros((15))])
 
     if splitArr[2].size > 0:
-        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[2])])
+        completeEntropyMatrix = np.column_stack([completeEntropyMatrix, segmentEntropyMatrix(splitArr[2], isSubject)])
     else:
         completeEntropyMatrix = np.column_stack([completeEntropyMatrix, np.zeros((15))])
 
