@@ -2,6 +2,8 @@ import re
 import logging
 import os
 import pickle
+import pandas as pd
+import numpy as np
 
 import config
 
@@ -16,6 +18,16 @@ class FEUtils():
 
     def __init__(self):
         self.all_samples_ids = set()
+
+    def get_intervals(self, duration, split_ratios):
+        prev_split_point = 0
+        tuples_array = []
+        for point in np.cumsum(split_ratios[:-1]):
+            split_point = point * duration
+            tuples_array.append((prev_split_point, split_point))
+            prev_split_point = split_point
+        tuples_array.append((split_point, duration))
+        return pd.IntervalIndex.from_tuples(tuples_array)
 
     def extract_info(self, path):
         """
