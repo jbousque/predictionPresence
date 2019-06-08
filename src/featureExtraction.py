@@ -22,6 +22,7 @@ from ipuseg import IPUdriver
 from pos import POSfeatures, avgSentenceLength, answerDelays
 from wavSplitter import duration
 from agent import generate_xra, vectorize_agent_speech
+from angles import angles
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +152,21 @@ def computeAnswerDelays(pathsList, splitratios, isSubject=True):
                         except Exception:
                             logger.exception("computeAnswerDelays() failed for %s / %s / %s", envType, candidate, path)
 
+def computeAngularSpeeds(pathsList, splitratios, isSubject=True):
+    for paths in pathsList:
+        for path in paths:
+            fileName, fileext = os.path.splitext(path)
+            if (fileext == ".txt"):
+                candidate, envType = feu.extract_info(path)
+                logger.debug("computeAngularSpeeds: candidate %s / env %s (%s)" % (candidate, envType, path))
+                try:
+                    df = angles(path, splitratios, isSubject)
+                    dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "angles.txt")
+                    if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
+                    df.to_csv(dest, index=True)
+                except Exception:
+                    logger.exception("computeAngularSpeeds: failed for %s / %s", envType, candidate)
+
 def sum_nan_arrays(a, b):
     # from https://stackoverflow.com/questions/42209838/treat-nan-as-zero-in-numpy-array-summation-except-for-nan-in-all-arrays
     ma = np.isnan(a)
@@ -275,6 +291,7 @@ def prepareMatrix(splitratios, isSubject=True):
     pScoreVec = []
     copClassVec = []
     copScoreVec = []
+    anglesFeatures = []
     logger.debug('prepareMatrix: retrieving features from folders "%s"', feu.get_featureset_folder_name(isSubject, splitratios))
     for dirs, subdirs, files in os.walk(profBCorpusPath, topdown=True, onerror=None, followlinks=False):
         try:
@@ -285,6 +302,7 @@ def prepareMatrix(splitratios, isSubject=True):
                 slengthFile = os.path.join(dirs, "slength.txt")
                 ipuFile = os.path.join(dirs, "ipu.txt")
                 answersFile = os.path.join(dirs, 'answers.txt')
+                anglesFile = os.path.join(dirs, 'angles.txt')
 
                 envType = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(posFile))))
                 candidate = os.path.basename(
@@ -301,6 +319,8 @@ def prepareMatrix(splitratios, isSubject=True):
                     logger.warn('prepareMatrix: missing IPUs file %s for %s/%s', ipuFile, candidate, envType)
                 elif not os.path.isfile(answersFile):
                     logger.warn('prepareMatrix: missing answers delays file %s for %s/%s' % (answersFile, candidate, envType))
+                elif not os.path.isfile((anglesFile)):
+                    logger.warn('prepareMatrix: missing angles speeds file %s for %s/%s' % (anglesFile, candidate, envType))
                 else:
                     # print "in condition"
                     expert = 1
@@ -353,10 +373,21 @@ def prepareMatrix(splitratios, isSubject=True):
                     slengthMat = np.loadtxt(slengthFile)
                     ipuMat = np.loadtxt(ipuFile)
                     answersMat = np.loadtxt(answersFile)
+
+                    angles_df = pd.read_csv(anglesFile)
+                    anglesMat = angles_df.values[0][1:] # not sure why first column is empty...
+                    anglesFeatures = angles_df.columns[1:].values
+                    #print('angles ' + str(angles_df.index.names) + ', ' + str(angles_df.columns.names))
+                    logger.debug('compressedEntMat %s, posMat %s, slengthMat %s ipuMat %s, answersMat %s, anglesMat %s'
+                                 % (compressedEntMat.shape, posMat.shape, slengthMat.shape, ipuMat.shape,
+                                    answersMat.shape, anglesMat.shape))
+                    logger.debug('compressedEntMat %s' % str(compressedEntMat))
+                    anglesMat = anglesMat.reshape((-1,3))
                     # print ipuMat
-                    combinedMat = np.vstack((compressedEntMat, posMat, slengthMat, ipuMat, answersMat))
+                    combinedMat = np.vstack((compressedEntMat, posMat, slengthMat, ipuMat, answersMat, anglesMat))
                     logger.debug('answersMat %s' % answersMat)
                     logger.debug('ipuMat %s' % ipuMat)
+                    logger.debug('anglesMat %s' % anglesMat)
                     logger.debug('combined mat %s' % combinedMat)
 
                     adjecPOSVec = posMat[0, :]
@@ -438,7 +469,7 @@ def prepareMatrix(splitratios, isSubject=True):
                             + feu.get_featureset_folder_name(isSubject, splitratios) + '.xlsx')
 
 
-
+    #print('angles features ' + str(anglesFeatures))
     pdDump.columns = ['Head_Entropy_Start', 'Head_Entropy_Mid', 'Head_Entropy_End', 'LeftWrist_Entropy_Start',
                       'LeftWrist_Entropy_Mid', 'LeftWrist_Entropy_End', 'RightWrist_Entropy_Start',
                       'RightWrist_Entropy_Mid', 'RightWrist_Entropy_End', 'LeftElbow_Entropy_Start',
@@ -452,7 +483,7 @@ def prepareMatrix(splitratios, isSubject=True):
                       'Freq_Pronoun_Mid', 'Freq_Pronoun_End', 'Freq_Verb_Begin', 'Freq_Verb_Mid', 'Freq_Verb_End',
                       'Avg_SentenceLength_Begin', 'Avg_SentenceLength_Mid', 'Avg_SentenceLength_End',
                       'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Avg_AnswersDelay_Begin',
-                      'Avg_AnswersDelay_Mid', 'Avg_AnswersDelay_End', 'Ratio1_Begin', 'Ratio1_Mid',
+                      'Avg_AnswersDelay_Mid', 'Avg_AnswersDelay_End'] + list(anglesFeatures) + ['Ratio1_Begin', 'Ratio1_Mid',
                       'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score',
                       'Presence Class', 'Co-presence Score', 'Co-presence Class']
     # compute average entropies columns
@@ -476,7 +507,7 @@ def prepareMatrix(splitratios, isSubject=True):
                       'Freq_Pronoun_Mid', 'Freq_Pronoun_End', 'Freq_Verb_Begin', 'Freq_Verb_Mid', 'Freq_Verb_End',
                       'Avg_SentenceLength_Begin', 'Avg_SentenceLength_Mid', 'Avg_SentenceLength_End',
                       'Avg_IPUlen_Begin', 'Avg_IPUlen_Middle', 'Avg_IPUlen_End', 'Avg_AnswersDelay_Begin',
-                      'Avg_AnswersDelay_Mid', 'Avg_AnswersDelay_End', 'Ratio1_Begin', 'Ratio1_Mid',
+                      'Avg_AnswersDelay_Mid', 'Avg_AnswersDelay_End'] + list(anglesFeatures) + ['Ratio1_Begin', 'Ratio1_Mid',
                       'Ratio1_End', 'Ratio2_Begin', 'Ratio2_Mid', 'Ratio2_End', 'Duration', 'Presence Score',
                       'Presence Class', 'Co-presence Score', 'Co-presence Class']]
     pdDump.insert(0, 'Candidate', candidateVec)
@@ -827,13 +858,15 @@ def copresenceModels(dataFile):
 
 
 def computeFeatures(pathsList, splitratios, isSubject=True):
+    pass
     # Function to call all functions to compute features
     #computePOStags(pathsList, splitratios, isSubject)
     #computeSentenceLengths(pathsList, splitratios, isSubject)
-    computeEntropies(pathsList, splitratios, isSubject)
-    removeNaN(splitratios, isSubject)
+    #computeEntropies(pathsList, splitratios, isSubject)
+    #removeNaN(splitratios, isSubject)
     #computeIPUlengths(pathsList, splitratios, isSubject)
     #computeAnswerDelays(pathsList, splitratios, isSubject)
+    computeAngularSpeeds(pathsList, splitratios, isSubject)
 
 
 def computeAveragedMatrix(dataFile, outputFile):
