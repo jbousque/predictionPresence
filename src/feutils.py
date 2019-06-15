@@ -4,6 +4,7 @@ import os
 import pickle
 import pandas as pd
 import numpy as np
+import subprocess
 
 import config
 
@@ -251,3 +252,122 @@ class DataHandler():
         except Exception as e:
             print(e)
             print('Could not save figure %s' % path)
+
+class JNCC2Wrapper():
+    """
+
+    """
+
+    logger_ = logging.getLogger(__name__)
+
+    def __init__(self, dataHandler=None):
+        self.logger_.debug('JNCC2Wrapper(dataHandler=%s)' % str(dataHandler))
+        print('JNCC2Wrapper(dataHandler=%s)' % str(dataHandler))
+        self.dh_ = dataHandler
+        if dataHandler is not None:
+            self.arff_root_path_ = os.path.join(self.dh_.root_path, 'arff')
+            if not os.path.exists(os.path.dirname(self.arff_root_path_)): os.makedirs(os.path.dirname(self.arff_root_path_))
+        else:
+            self.arff_root_path_ = None
+        self.logger_.debug('JNCC2Wrapper: initialized arff_root_path_ to %s' % self.arff_root_path_)
+
+    def generate_arff(self, fname, features, prediction_task, X, y):
+        """
+        Generates .arff file format required by JNCC2 java-based classifier.
+
+        fname: file name to create without .arff extension (it may contain path information)
+        """
+        self.logger_.debug('generate_arff(fname=%s, features=%s, prediction_task=%s, X shape=%s, y shape=%s)'
+                     % (fname, str(features), prediction_task, str(X.shape), str(y.shape)))
+        print('generate_arff(fname=%s, features=%s, prediction_task=%s, X shape=%s, y shape=%s)'
+                     % (fname, str(features), prediction_task, str(X.shape), str(y.shape)))
+
+        # create path if it does not exist
+        if not os.path.exists(os.path.dirname(fname)): os.makedirs(os.path.dirname(fname))
+
+        text_file = open(fname + '.arff', "w")
+        text_file.write("@relation %s\n" % fname)
+        for feature in features:
+            if feature == 'Expert':
+                text_file.write("@attribute expert {0,1}\n")
+            else:
+                text_file.write("@attribute %s numeric\n" % feature.lower().replace('_', ''))
+        classes_str = '{'
+        #classes_dict = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+        for idx, cl in enumerate(np.unique(y)):
+            classes_str += str(int(cl))
+            if idx < len(np.unique(y)) - 1:
+                classes_str += ','
+        classes_str += '}'
+        text_file.write('@attribute class %s\n' % classes_str)
+        """if prediction_task == 'presence':
+            text_file.write("@attribute PresenceClass %s\n" % classes_str)
+        else:
+            text_file.write("@attribute CopresenceClass %s\n" % classes_str)"""
+        text_file.write("@DATA\n")
+        Xarr = np.array(X)
+        for idx, (x_, y_) in enumerate(zip(Xarr, y)):
+
+            line = ''
+            for idx, feature in enumerate(features):
+                if feature == 'Expert':
+                    line += str(int(x_[idx])) + ','
+                else:
+                    line += '%f,' % x_[idx]   #str(x_[idx]) + ','
+            line += str(int(y_))
+            text_file.write(line+'\n')
+            """text_file.write("%d,%s,%d\n" % (int(x_[expertIndex]),
+                                            ','.join(str(x__) for x__ in x_[1:]),
+                                            y_))"""
+
+        text_file.close()
+
+    def cv(self, train_arff_file, idx=None):
+        self.logger_.debug('cv(train_arff_file=%s)' % train_arff_file)
+        print('cv(train_arff_file=%s, idx=%s)' % (train_arff_file, str(idx)))
+        if idx is not None:
+            path = os.path.join(self.arff_root_path_, str(idx))
+        else:
+            path = self.arff_root_path_
+        cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, 'cv']
+        self.logger_.debug('cv: Executing' + subprocess.list2cmdline(cmd))
+        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        output = subprocess.check_output(cmd)
+        self.logger_.info(output)
+        print(output)
+
+        # load result
+        rfile = os.path.join(path, 'Predictions-CV-train.csv')
+        if os.path.isfile(rfile):
+            rdf = pd.read_csv(rfile, header=None)
+            # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
+            res = rdf.iloc(axis=1)[2:-1]
+            self.logger_.debug('predict: return %s' % str(res.shape))
+            print('predict: return %s' % str(res.shape))
+            return res
+
+
+    def predict(self, train_arff_file, test_arff_file, idx=None):
+        self.logger_.debug('predict(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
+        print('predict(train_arff_file=%s, test_arff_file=%s, idx=%s)' % (train_arff_file, test_arff_file, str(idx)))
+        if idx is not None:
+            path = os.path.join(self.arff_root_path_, str(idx))
+        else:
+            path = self.arff_root_path_
+        cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, test_arff_file]
+        self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
+        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        output = subprocess.check_output(cmd)
+        self.logger_.info(output)
+        print(output)
+
+        # load result
+        rfile = os.path.join(path, 'Predictions-Testing-test.csv')
+        if os.path.isfile(rfile):
+            rdf = pd.read_csv(rfile, header=None)
+            # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
+            res = rdf.iloc(axis=1)[2:-1]
+            self.logger_.debug('predict: return %s' % str(res.shape))
+            print('predict: return %s' % str(res.shape))
+            return res
+

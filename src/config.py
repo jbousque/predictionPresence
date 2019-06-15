@@ -39,6 +39,10 @@ SPPAS_GREG_SRC_PATH = os.path.join(PREV_CORPUS_PATH, 'tools')
 MARSATAG_PATH = os.path.join(TOOLS_PATH, 'MarsaTag')
 MARSATAG_COMMAND = os.path.join(MARSATAG_PATH, 'MarsaTag-UI.bat')
 
+# JNCC2
+
+JNCC2_JAR = os.path.join(TOOLS_PATH, 'jncc2Rel1.11', 'jncc2-rebuild.jar')
+
 #  pyAudioAnalysis
 
 PYAA_SRC_PATH = os.path.join(TOOLS_PATH, 'pyAudioAnalysis', 'pyAudioAnalysis', 'pyAudioAnalysis')
