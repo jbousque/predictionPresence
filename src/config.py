@@ -7,7 +7,7 @@ import random
 import numpy as np
 from datetime import datetime
 
-ROOT_PATH = os.path.join('C:\\', 'IAAA' ,'TER')
+ROOT_PATH = os.path.join('/home', 'jerem', 'DEV' ,'TER')
 
 # Corpus
 
