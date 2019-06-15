@@ -313,7 +313,7 @@ class JNCC2Wrapper():
                 if feature == 'Expert':
                     line += str(int(x_[idx])) + ','
                 else:
-                    line += '%.1f,' % x_[idx]   #str(x_[idx]) + ','
+                    line += '%f,' % x_[idx]   #str(x_[idx]) + ','
             line += str(int(y_))
             text_file.write(line+'\n')
             """text_file.write("%d,%s,%d\n" % (int(x_[expertIndex]),
@@ -322,17 +322,52 @@ class JNCC2Wrapper():
 
         text_file.close()
 
-    def cv(self, train_arff_file):
+    def cv(self, train_arff_file, idx=None):
         self.logger_.debug('cv(train_arff_file=%s)' % train_arff_file)
-        print('cv(train_arff_file=%s)' % train_arff_file)
-        cmd = [config.JNCC2_JAR, self.arff_root_path_, train_arff_file, 'cv']
+        print('cv(train_arff_file=%s, idx=%s)' % (train_arff_file, str(idx)))
+        if idx is not None:
+            path = os.path.join(self.arff_root_path_, str(idx))
+        else:
+            path = self.arff_root_path_
+        cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, 'cv']
         self.logger_.debug('cv: Executing' + subprocess.list2cmdline(cmd))
-        self.logger_.info(subprocess.check_output(cmd))
+        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        output = subprocess.check_output(cmd)
+        self.logger_.info(output)
+        print(output)
 
-    def predict(self, train_arff_file, test_arff_file):
+        # load result
+        rfile = os.path.join(path, 'Predictions-CV-train.csv')
+        if os.path.isfile(rfile):
+            rdf = pd.read_csv(rfile, header=None)
+            # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
+            res = rdf.iloc(axis=1)[2:-1]
+            self.logger_.debug('predict: return %s' % str(res.shape))
+            print('predict: return %s' % str(res.shape))
+            return res
+
+
+    def predict(self, train_arff_file, test_arff_file, idx=None):
         self.logger_.debug('predict(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
-        print('predict(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
-        cmd = [config.JNCC2_JAR, self.arff_root_path_, train_arff_file, test_arff_file]
+        print('predict(train_arff_file=%s, test_arff_file=%s, idx=%s)' % (train_arff_file, test_arff_file, str(idx)))
+        if idx is not None:
+            path = os.path.join(self.arff_root_path_, str(idx))
+        else:
+            path = self.arff_root_path_
+        cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, test_arff_file]
         self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
-        self.logger_.info(subprocess.check_output(cmd))
+        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        output = subprocess.check_output(cmd)
+        self.logger_.info(output)
+        print(output)
+
+        # load result
+        rfile = os.path.join(path, 'Predictions-Testing-test.csv')
+        if os.path.isfile(rfile):
+            rdf = pd.read_csv(rfile, header=None)
+            # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
+            res = rdf.iloc(axis=1)[2:-1]
+            self.logger_.debug('predict: return %s' % str(res.shape))
+            print('predict: return %s' % str(res.shape))
+            return res
 

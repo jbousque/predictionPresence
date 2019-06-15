@@ -41,7 +41,7 @@ MARSATAG_COMMAND = os.path.join(MARSATAG_PATH, 'MarsaTag-UI.bat')
 
 # JNCC2
 
-JNCC2_JAR = os.path.join(TOOLS_PATH, 'jncc2Rel1.11', 'jncc2-rel1.11.jar')
+JNCC2_JAR = os.path.join(TOOLS_PATH, 'jncc2Rel1.11', 'jncc2-rebuild.jar')
 
 #  pyAudioAnalysis
 
