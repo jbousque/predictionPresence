@@ -6,6 +6,9 @@ import pandas as pd
 import numpy as np
 import subprocess
 
+from sklearn.metrics import label_ranking_average_precision_score
+from sklearn.preprocessing import LabelBinarizer
+
 import config
 
 logger = logging.getLogger(__name__)
@@ -182,6 +185,47 @@ class FEUtils():
 
         return outerArr
 
+    def compute_mrr(self, y_true, y_pred, labels):
+        """
+        Compute the mean reciprocal rank (as y_true provides only one label as relevant).
+        :param y_true: (nb samples)
+        :param y_pred: (nb samples, nb classes)
+        :param labels: (nb classes)
+        :return: the mean reciprocal rank.
+        """
+        if type(y_true) is np.ndarray:
+            y_true = pd.DataFrame(y_true)
+        if type(y_pred) is np.ndarray:
+            y_pred = pd.DataFrame(y_pred)
+        lb = LabelBinarizer()
+        lb.fit(labels)
+        y_score = np.zeros(y_pred.values.shape)
+        for i in np.arange(y_score.shape[1]):
+            col = y_pred.iloc[:, i]
+            if len(labels)> 2:
+                binarized = lb.transform(col)
+            else:
+                binarized = np.zeros((len(col), 2))
+                #print(binarized.shape)
+                for irow in np.arange(len(col)):
+                    if col[irow] == 0:
+                        binarized[irow, 0] = 1
+                    elif col[irow] == 1:
+                        binarized[irow, 1] = 1
+            y_score = y_score + (binarized.astype(float) / (i+1))
+        y_true_bin = lb.transform(y_true.values.reshape(-1,1))
+        if len(labels) <= 2:
+            y_true_bin_ = np.zeros((len(y_true_bin), 2))
+            for irow in np.arange(len(y_true_bin)):
+                if y_true_bin[irow] == 0:
+                    y_true_bin_[irow, 0] = 1
+                else:
+                    y_true_bin_[irow, 1] = 1
+            y_true_bin = y_true_bin_
+        #print('y_true_bin %s y_score %s' % (y_true_bin.shape, y_score.shape))
+        #print(y_true_bin)
+        #print(y_score)
+        return label_ranking_average_precision_score(y_true_bin, y_score)
 
 class DataHandler():
 
@@ -253,6 +297,8 @@ class DataHandler():
             print(e)
             print('Could not save figure %s' % path)
 
+
+
 class JNCC2Wrapper():
     """
 
@@ -300,10 +346,6 @@ class JNCC2Wrapper():
                 classes_str += ','
         classes_str += '}'
         text_file.write('@attribute class %s\n' % classes_str)
-        """if prediction_task == 'presence':
-            text_file.write("@attribute PresenceClass %s\n" % classes_str)
-        else:
-            text_file.write("@attribute CopresenceClass %s\n" % classes_str)"""
         text_file.write("@DATA\n")
         Xarr = np.array(X)
         for idx, (x_, y_) in enumerate(zip(Xarr, y)):
@@ -331,7 +373,7 @@ class JNCC2Wrapper():
             path = self.arff_root_path_
         cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, 'cv']
         self.logger_.debug('cv: Executing' + subprocess.list2cmdline(cmd))
-        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        print("cv: Executing " + subprocess.list2cmdline(cmd))
         output = subprocess.check_output(cmd)
         self.logger_.info(output)
         print(output)
@@ -340,11 +382,27 @@ class JNCC2Wrapper():
         rfile = os.path.join(path, 'Predictions-CV-train.csv')
         if os.path.isfile(rfile):
             rdf = pd.read_csv(rfile, header=None)
-            # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
-            res = rdf.iloc(axis=1)[2:-1]
-            self.logger_.debug('predict: return %s' % str(res.shape))
-            print('predict: return %s' % str(res.shape))
-            return res
+            # first column is id of cv, 2nd column is actual, last column is NBC - rest are NCC predictions
+            prev = -1
+            real_id = []
+            curr = -1
+            for i in np.arange(len(rdf)):
+                val = rdf.iloc[i,0]
+                print('cv: rdf id #%d value %d' % (i, rdf.iloc[i,0]))
+                if val != prev:
+                    curr += 1
+                    prev = val
+                real_id.append(curr)
+            rdf['real_id'] = real_id
+            res = []
+            y_trues = []
+            for i in np.arange(curr):
+                res.append(rdf[rdf['real_id'] == i].iloc(axis=1)[2:-2].values)
+                y_trues.append(rdf[rdf['real_id'] == i].iloc(axis=1)[1].values)
+            #res = rdf.iloc(axis=1)[0:-1]
+            self.logger_.debug('cv: return %s x %s' % (str(len(res)), str(res[0].shape)))
+            print('cv: return %s x %s' % (str(len(res)), str(res[0].shape)))
+            return res, y_trues
 
 
     def predict(self, train_arff_file, test_arff_file, idx=None):
@@ -367,7 +425,10 @@ class JNCC2Wrapper():
             rdf = pd.read_csv(rfile, header=None)
             # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
             res = rdf.iloc(axis=1)[2:-1]
+            y_true = rdf.iloc(axis=1)[1]
             self.logger_.debug('predict: return %s' % str(res.shape))
             print('predict: return %s' % str(res.shape))
-            return res
+            return res, y_true
+
+
 
