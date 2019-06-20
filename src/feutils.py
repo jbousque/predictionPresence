@@ -388,7 +388,7 @@ class JNCC2Wrapper():
             curr = -1
             for i in np.arange(len(rdf)):
                 val = rdf.iloc[i,0]
-                print('cv: rdf id #%d value %d' % (i, rdf.iloc[i,0]))
+                #print('cv: rdf id #%d value %d' % (i, rdf.iloc[i,0]))
                 if val != prev:
                     curr += 1
                     prev = val
