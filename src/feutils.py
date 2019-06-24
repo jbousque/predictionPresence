@@ -33,6 +33,9 @@ class FEUtils():
         tuples_array.append((split_point, duration))
         return pd.IntervalIndex.from_tuples(tuples_array)
 
+    def get_interval(self, intervals, begin, end):
+        return intervals.get_loc((begin + end) / 2)
+
     def extract_info(self, path):
         """
 

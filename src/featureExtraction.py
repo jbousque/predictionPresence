@@ -122,7 +122,7 @@ def computeIPUlengths(pathsList, splitratios, isSubject=True):
                 #candidate = os.path.basename(os.path.normpath(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
                 candidate, envType = feu.extract_info(path)
                 try:
-                    entArr = IPUdriver(path, splitratios)
+                    entArr = IPUdriver(path, splitratios, isSubject)
                     dest = os.path.join(profBCorpusPath, candidate, envType, feu.get_featureset_folder_name(isSubject, splitratios), "ipu.txt")
                     if not os.path.exists(os.path.dirname(dest)): os.makedirs(os.path.dirname(dest))
                     logger.debug("computeIPUlengths: saving %s", dest)
@@ -864,9 +864,9 @@ def computeFeatures(pathsList, splitratios, isSubject=True):
     #computeSentenceLengths(pathsList, splitratios, isSubject)
     #computeEntropies(pathsList, splitratios, isSubject)
     #removeNaN(splitratios, isSubject)
-    #computeIPUlengths(pathsList, splitratios, isSubject)
+    computeIPUlengths(pathsList, splitratios, isSubject)
     #computeAnswerDelays(pathsList, splitratios, isSubject)
-    computeAngularSpeeds(pathsList, splitratios, isSubject)
+    #computeAngularSpeeds(pathsList, splitratios, isSubject)
 
 
 def computeAveragedMatrix(dataFile, outputFile):
