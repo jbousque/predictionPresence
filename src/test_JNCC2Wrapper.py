@@ -38,6 +38,8 @@ class TestJNCC2Wrapper(TestCase):
         X_test = pd.DataFrame(X_test, columns=['a', 'b', 'c'])
         res = clf.predict(X_test, y_test)
         print(res)
+        assert(res.shape == (5,1))
+
 
     def test_score(self):
         dh = DataHandler('__unittests', '__jncc2wrapper', 2)
@@ -86,3 +88,4 @@ class TestJNCC2Wrapper(TestCase):
         X_test = pd.DataFrame(X_test, columns=['a', 'b', 'c'])
         res = clf.predict(X_test, y_test)
         print(res)
+

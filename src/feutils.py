@@ -201,13 +201,19 @@ class FEUtils():
         :param labels: (nb classes)
         :return: the mean reciprocal rank.
         """
+        print('compute_mrr(y_true %s, y_pred %s, labels %s' % (str(y_true), str(y_pred), str(labels)))
         if type(y_true) is np.ndarray:
             y_true = pd.DataFrame(y_true)
         if type(y_pred) is np.ndarray:
             y_pred = pd.DataFrame(y_pred)
         lb = LabelBinarizer()
         lb.fit(labels)
+        if y_pred.to_numpy().ndim == 1:
+            y_pred = pd.DataFrame(y_pred.to_numpy()[:, np.newaxis])
+        if y_true.to_numpy().ndim == 1:
+            y_true = pd.DataFrame(y_true.to_numpy()[:, np.newaxis])
         y_score = np.zeros(y_pred.values.shape)
+        print(y_pred.to_numpy().shape)
         for i in np.arange(y_score.shape[1]):
             col = y_pred.iloc[:, i]
             if len(labels)> 2:
@@ -230,9 +236,9 @@ class FEUtils():
                 else:
                     y_true_bin_[irow, 1] = 1
             y_true_bin = y_true_bin_
-        #print('y_true_bin %s y_score %s' % (y_true_bin.shape, y_score.shape))
-        #print(y_true_bin)
-        #print(y_score)
+        print('y_true_bin %s y_score %s' % (y_true_bin.shape, y_score.shape))
+        print(y_true_bin)
+        print(y_score) # TODO check why even when ndim=1, when y_pred is wrong, there is 0,1 or 1,0 in binarized y_pred ???
         return label_ranking_average_precision_score(y_true_bin, y_score)
 
 class DataHandler():
@@ -363,7 +369,7 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         text_file = open(file_name + '.arff', "w")
         text_file.write("@relation %s\n" % file_name)
         for feature in features:
-            if feature == 'Expert' or set(np.unique(X[feature])) in {0,1}:
+            if feature == 'Expert' or set(np.unique(X[feature])).issubset({0,1}):
                 text_file.write("@attribute %s {0,1}\n" % feature.lower().replace('_', ''))
             else:
                 text_file.write("@attribute %s numeric\n" % feature.lower().replace('_', ''))
@@ -386,7 +392,7 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
 
             line = ''
             for idx, feature in enumerate(features):
-                if feature == 'Expert' or set(np.unique(X[feature])) == {0,1}:
+                if feature == 'Expert' or set(np.unique(X[feature])).issubset({0,1}):
                     line += str(int(x_[idx])) + ','
                 else:
                     line += '%f,' % x_[idx]   #str(x_[idx]) + ','
@@ -464,10 +470,11 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         if os.path.isfile(rfile):
             rdf = pd.read_csv(rfile, header=None)
             # first column is id, 2nd column is actual, last column is NBC - rest are NCC predictions
+            #print(rdf)
             res = rdf.iloc(axis=1)[2:-1]
             y_true = rdf.iloc(axis=1)[1]
             self.logger_.debug('predict: return %s' % str(res.shape))
-            print('predict: return %s' % str(res.shape))
+            #print('predict: return %s' % str(res.shape))
             return res
 
     def _predict_unknownclasses(self, train_arff_file, test_arff_file):
@@ -504,6 +511,8 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             print(csv_string)
             rdf = pd.read_csv(StringIO(csv_string), header=None)
             print(rdf)
+            print('JNCC2Wrapper._predict_unknownclasses return:')
+            print(rdf.iloc(axis=1)[-3])
             return rdf.iloc(axis=1)[-3]
         return None
 
