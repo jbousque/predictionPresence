@@ -374,8 +374,6 @@ def POSfeatures(transcriptionFile, wavFile, splitUp, sppaspath, sppasver):
 
     return features
 
-def get_interval(intervals, begin, end):
-    return intervals.get_loc((begin+end) / 2)
 
 def answerDelays(transcriptionFile, wavPath, splitratios, isSubject):
 
@@ -425,8 +423,8 @@ def answerDelays(transcriptionFile, wavPath, splitratios, isSubject):
             for annotation in tier:
                 if(annotation.GetLabel().GetValue() == "speech"):
                     logger.debug('answerDelays: annotation %s' % str(annotation))
-                    object_methods = [method_name for method_name in dir(annotation) if callable(getattr(annotation, method_name))]
-                    logger.debug('methods %s ' % str(object_methods))
+                    #object_methods = [method_name for method_name in dir(annotation) if callable(getattr(annotation, method_name))]
+                    #logger.debug('methods %s ' % str(object_methods))
                     doctor_times.append(int(annotation.GetLocation().GetBeginMidpoint() * 1000))
                     doctor_times.append(int(annotation.GetLocation().GetEndMidpoint() * 1000))
                     doctor_markers.append('BD')
@@ -483,13 +481,13 @@ def answerDelays(transcriptionFile, wavPath, splitratios, isSubject):
                                      % (BD, str(last_EA), str(delays_B[-1]) if delays_B else '[]', str(last_EA_idx)))
                         # actor ended speech at last_EA and answer came at times[idx]
                         delays_B.append(last_EA_idx)
-                        it = get_interval(intervals, last_EA, times[idx])
+                        it = feu.get_interval(intervals, last_EA, times[idx])
                         delays[it].append(times[idx] - last_EA)
                 else:
                     # delay is 0, end of previous segment not reached, so consider current index
                     # (BD) as time of previous end of talk segment
                     delays_B.append(idx)
-                    it = get_interval(intervals, times[idx], times[idx])
+                    it = feu.get_interval(intervals, times[idx], times[idx])
                     delays[it].append(0)
             logger.debug('answerDelays: update delays_B %s, delays %s' % (str(delays_B), str(delays)))
     delays = np.nan_to_num([np.mean(item) for item in delays])
