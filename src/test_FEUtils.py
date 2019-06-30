@@ -3,6 +3,7 @@ from feutils import FEUtils
 import numpy as np
 import pandas as pd
 
+
 class TestFEUtils(TestCase):
     def test_compute_mrr(self):
         feu = FEUtils()
@@ -21,13 +22,12 @@ class TestFEUtils(TestCase):
 
     def test_compute_mrr_determined(self):
         feu = FEUtils()
-        df = pd.DataFrame(np.random.randint(2,size=(10,2)), columns=['feat1', 'y'])
+        df = pd.DataFrame(np.random.randint(2, size=(10, 2)), columns=['feat1', 'y'])
         y_true = df['feat1']
         y_pred = df['y']
         mrr = feu.compute_mrr(y_true, y_pred, [0, 1])
         print(mrr)
         assert mrr == 1
-
 
         """compute_mrr(y_true 6     1
 48    1
@@ -49,3 +49,23 @@ Name: PresenceClass_2_uniform, dtype: int32, y_pred 0    1
 8    0
 Name: 7, dtype: int64, labels [0, 1]
 (9,)"""
+
+
+    def test_compute_determinacy(self):
+        feu = FEUtils()
+        y_pred = np.random.randint(2, size=(10))
+        determ = feu.compute_determinacy(y_pred)
+        print("determinacy (vector) %f" % determ)
+
+        y_pred = np.random.randint(2, size=(10,2))
+        determ = feu.compute_determinacy(y_pred)
+        print("determinacy (2 labels) %f" % determ)
+
+        y_pred[5][1] = 6666
+        print(y_pred)
+        determ2 = feu.compute_determinacy(y_pred)
+        print("determinacy (2 labels, 1 determined) %f" % determ2)
+        assert(determ < determ2)
+
+        y_pred = pd.DataFrame(y_pred)
+        determ3 = feu.compute_determinacy(y_pred)

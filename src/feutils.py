@@ -1,3 +1,4 @@
+#from __future__ import division
 import re
 import logging
 import os
@@ -11,6 +12,7 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
+
 
 from sklearn.metrics import label_ranking_average_precision_score
 from sklearn.preprocessing import LabelBinarizer
@@ -243,6 +245,14 @@ class FEUtils():
         print(y_true_bin)
         print(y_score) # TODO check why even when ndim=1, when y_pred is wrong, there is 0,1 or 1,0 in binarized y_pred ???
         return label_ranking_average_precision_score(y_true_bin, y_score)
+
+    def compute_determinacy(self, y_pred):
+        if type(y_pred) is pd.DataFrame:
+            y_pred = y_pred.to_numpy()
+        if y_pred.ndim == 1:
+            y_pred = y_pred[:, np.newaxis]
+        determ = np.sum(np.sum(y_pred != 6666, axis=1) == 1) / float(len(y_pred))
+        return determ
 
 class DataHandler():
 
