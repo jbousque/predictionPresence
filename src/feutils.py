@@ -7,7 +7,10 @@ import numpy as np
 import subprocess
 import hashlib
 
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from sklearn.metrics import label_ranking_average_precision_score
 from sklearn.preprocessing import LabelBinarizer
@@ -526,7 +529,7 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         print('JNCC2Wrapper.fit(X=%s, y=%s)' % (X.to_numpy().shape if isinstance(X, pd.DataFrame) else X.shape,
                                                 y.shape if y is not None else 'None'))
         m = hashlib.md5()
-        m.update(str(np.array(X)))
+        m.update(str(np.array(X)).encode('utf-8'))
         hash = m.hexdigest()
         if self.arff_root_path_ is None:
             self.__init__(self.dataHandler, self.idx)
