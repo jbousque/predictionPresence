@@ -1,8 +1,14 @@
 ---
 title: Apprentissage sur un petit ensemble de données
 #subtitle:
-#author:
+author: Bousquet Jérémie, Hmamouche Youssef
 #date: LPL, Aix En Provence, 25.04.2019
+
+output:
+  beamer_presentation:
+    theme: "AnnArbor"
+    colortheme: "dolphin"
+    fonttheme: "structurebold"
 
 header-includes:
     - \usepackage{hyperref}
@@ -14,33 +20,30 @@ header-includes:
 ## Overfitting
 
 Le terme "overfitting" correspond au cas où le prédicteur modélise trop étroitement les données d'apprentissage (jusqu'à
-les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capacités sur de nouvelles données. 
+les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capacités sur de nouvelles données.
 
-* comment mesurer l'overfitting 
+* comment mesurer l'overfitting
 > (mesures oop, performances à 1, ect)
-   * Evaluer l'erreur du modèle pour les données d'entrainement et les données de validation et de test.
-    Si l'erreur est faible pour les données d'entrainement par rapport au données de test, dans ce cas on peut dire qu'il y a overfitting.
+   * Evaluer la différence entre les erreurs des modèles sur les données de validation (entrainement) et les données de test.
+    Example, utiliser des tests de signification statistiques.
 
 
-> (pourquoi la k-cross validation est pas suffisant, pourquoi un corpus de validation peut permettre de pallier à cela, ect.)
 
-* comment éviter l'overfitting 
+* (pourquoi la k-cross validation est pas suffisant, pourquoi un corpus de validation peut permettre de pallier à cela, ect.)
+
+## Overfitting
+
+* comment éviter l'overfitting
 
   * poser des contraintes sur les hyper-paramètres (lorsque cela est pertinent/possible). Pour certains classifieurs des paramètres 'extrêmes' (grands/petits) peuvent encourager l'overfitting
-  
+
   * ajouter une régularisation (contrainte pour limiter la complexité du modèle)
-  
+
   * augmenter les données en ajoutant des données bruitées
-  
+
   * prendre en compte l'overfitting sur la sélection du modèle (et pas seulement sur l'apprentissage)
  (voir http://www.jmlr.org/papers/volume11/cawley10a/cawley10a.pdf), choisir une méthodologie non biaisée
 
-
-
-## Variantes de cross-validation
-* k-cross-validation
-* k-fold cross-validation (un seul ensemble de données de test)
-* k-fold cross-validation avec ensemble de test et de validation (plusieurs sous-ensembles comme données de test).
 
 ## Méthodes et techniques adaptées aux petits ensembles de données
 
@@ -52,23 +55,50 @@ Non exhaustif: Random Forests, Naïve Bayes ...
 Pour:
 
   * obtenir un dataset plus grand
-  
+
   * et/ou réduire les déséquilibres entre classes
 
 * Diminuer le bruit / le biais dans les données, retirer les outliers
 
   * auditer les échantillons existants
-  
+
   * régulariser l'apprentissage
-  
+
   * sur un faible volume de données les outliers peuvent avoir un impact important
 
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
-* k-fold cross-validation avec ensemble de test et de validation.
-* Problème : la cross validation pose quelques problème pour les données séquentielles car elle tient pas en compte l'ordre chronologiques des données,
-mais on peut l'appliquer dans notre cas si on considère chaque sous-ensemble est une conversation sous l'hypothèse que l'ordre des conversations n'est pas important.
-* Dans ce cas, on peut découper les données en 4 ensembles, chaque ensemble contient 6 conversations. Sur chaque ensemble on peut appliquer une k-fold cross-validation avec une seule conversations comme données de test, et pour les autres, on change aléatoirement l'ordre des conversations à chaque fois on considère une conversation comme données de validation, et on répète ce processus, jusqu'à ce que chaque conversation des données d'entrainement est utilisée un fois comme données de validation.
+* Méthode utilisée : k-fold cross-validation avec ensemble de test et de validation.
+* Problèmatique : la cross validation pose quelques problème pour les données séquentielles car elle ne tient pas en compte l'ordre chronologiques des données,
+mais on peut la faire marcher dans notre cas si on considère chaque  conversation comme un sous-ensemble sous l'hypothèse que l'ordre des conversations n'est pas important.
+
+## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
+\small
+* Première stratégie :  construire un seul modèle pour toutes les conversations.
+
+* Dans ce cas, on peut découper les données en 4 blocks (comme découpé lors de l'expérience d'IRMf), chaque block contient 6 conversations. Sur chaque block on peut appliquer une k-fold cross-validation en gardant une seule conversations comme données de test. Pour les autres, on change aléatoirement l'ordre des conversations à chaque fois et fixant une conversations pour la validation, et on répète ce processus, jusqu'à ce que chaque conversation des données d'entrainement est utilisée une fois comme données de validation.
+* Deuxième stratégie :  deux modèles séparés, un pour les conversations humain-humain (HH) et l'autre pour les conversations humain-robot (HR).
+
+## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
+### Modélisation 1
+
+* 20 convesations comme données d'apprentissages, et 4 conversations de test (2 HH et 2 HR).
+* 5-fold cross-validation avec ensemble de test et de validation sur les 4 blocks :
+   * Division des conversations en 4 blocks.
+   * Sur chaque block, une conversation est extraite comme données de test.
+   * Application d'une 5-fold cross-validation sur le reste des conversations.
+
+## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
+### Modélisation 1 : schéma
+\begin{center}
+\includegraphics[width=0.95\textwidth]{figs/cross.pdf}
+\end{center}
+
+## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
+### Modélisation 2 : deux modèles selon le type des conversations
+\begin{figure}[H]
+\includegraphics[width=0.95\textwidth]{figs/cross2.pdf}
+\end{figure}
 
 ## Application - Prédiction du sentiment de présence/co-présence en fonction des signaux multimodaux
 
@@ -81,9 +111,9 @@ Procédure:
   * 10-fold cross-validation sur l'ensemble train pour la recherche d'hyper-paramètres du modèle
 
   * évaluation de la capacité de prédiction sur l'ensemble test (non vu lors de l'apprentissage)
-  
+
   * moyennage des scores de test sur les 100 splits (avec calcul de l'erreur standard sur la moyenne)
-  
+
 ## Application - Prédiction du sentiment de présence/co-présence en fonction des signaux multimodaux
 
 Exemple d'overfitting: cas du SVM.
@@ -101,14 +131,14 @@ capacité de généralisation (la frontière de décision "épouse" les exemples
 Ci-dessous on visualise cet effet sur la prédiction de présence, la dimension des données est réduite à deux par
 PCA (Principal Component Analysis) afin de pouvoir visualiser le résultat et les frontières de décision:
 
-![alt text](svm-overfit.png)
+![alt text](figs/svm-overfit.png)
 
 (note: gamma est également modifié pour amplifier l'effet que l'on souhaite montrer)
 
 ## Techniques pour la génération de nouvelles données
 > quelles sont les différentes techniques pour la génération de
   nouvelles données ?
-  
+
 * Random sampling
 
 Pas a proprement parler de génération de nouvelles données, mais un re-sampling du dataset original
@@ -128,14 +158,14 @@ Un réseau génératif génère des données, le réseau adversaire discrimine e
 L'apprentissage demande généralement beaucoup de données et l'atteinte d'un point d'équilibre entre les deux réseaux.
 
 ## Génération de données - application sur la prédiction de présence
- 
+
  > leurs limites ? peut-on les appliquées sur des
   données comportementales comme les nôtres ?
- 
+
  Les techniques basées sur le deep learning (GAN) demandent généralement de grands volumes de données.
  D'autre part, la validation de la génération des données est qualitative, ce qui est aisé lorsque les données
  sont des images, mais ici il est compliqué de vérifier la qualité des échantillons générés.
- 
+
  Les autres techniques (random sampling, smote, adasyn, et leurs variantes) visent à corriger un déséquilibre entre classes
  en synthétisant des échantillons supplémentaires pour la classe minoritaire, l'argument étant que la plupart des algorithmes
  de machine learning sont moins performants lorsqu'il y a un tel déséquilibre.
@@ -145,5 +175,3 @@ L'apprentissage demande généralement beaucoup de données et l'atteinte d'un p
  D'autre part ces techniques se basent sur des échantillons existants, sans pouvoir discriminer si les échantillons choisis
  sont les plus représentatifs de la loi recherchée, ou si au contraire ils s'en éloignent le plus. SVM SMOTE utilise un classifieur
  SVM pour tenter d'améliorer ce point (là encore, avec des résultats peu significatifs dans notre cas).
- 
-
