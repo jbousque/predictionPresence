@@ -28,9 +28,9 @@ les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capa
    * Evaluer la différence entre les erreurs des modèles sur les données de validation (entrainement) et les données de test.
     Example, utiliser des tests de signification statistiques.
 
-   * Employer des méthodologies non biaisées (qui révèlent overfitting ou underfitting, dans l'apprentissage et la sélection 
+   * Employer des méthodologies non biaisées (qui révèlent overfitting ou underfitting, dans l'apprentissage et la sélection
    du modèle, voir par ex. <a href="http://www.jmlr.org/papers/volume11/cawley10a/cawley10a.pdf">Cawley et al. (2017)</a>)
-   
+
    * Ne pas se limiter à la mesure de la précision
 
 
@@ -47,20 +47,20 @@ les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capa
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
 * Méthode utilisée : k-fold cross-validation avec ensemble de test et de validation.
-* Problèmatique : la cross validation pose quelques problème pour les données séquentielles car elle ne tient pas en compte l'ordre chronologiques des données,
+* Problèmatique : la cross validation pose quelques problèmes pour les données séquentielles car elle ne tient pas en compte l'ordre chronologiques des données,
 mais on peut la faire marcher dans notre cas si on considère chaque  conversation comme un sous-ensemble sous l'hypothèse que l'ordre des conversations n'est pas important.
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
 \small
 * Première stratégie :  construire un seul modèle pour toutes les conversations.
 
-* Dans ce cas, on peut découper les données en 4 blocks (comme découpé lors de l'expérience d'IRMf), chaque block contient 6 conversations. Sur chaque block on peut appliquer une k-fold cross-validation en gardant une seule conversations comme données de test. Pour les autres, on change aléatoirement l'ordre des conversations à chaque fois et fixant une conversations pour la validation, et on répète ce processus, jusqu'à ce que chaque conversation des données d'entrainement est utilisée une fois comme données de validation.
+* Dans ce cas, on peut découper les données en 4 blocks (comme découpé lors de l'expérience d'IRMf), chaque block contient 6 conversations. Sur chaque block on peut appliquer une k-fold cross-validation en gardant une seule conversation comme données de test. Pour les autres, on change aléatoirement l'ordre des conversations à chaque fois et fixant une conversation pour la validation, et on répète ce processus, jusqu'à ce que chaque conversation des données d'entrainement est utilisée une fois pour la validation.
 * Deuxième stratégie :  deux modèles séparés, un pour les conversations humain-humain (HH) et l'autre pour les conversations humain-robot (HR).
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
 ### Modélisation 1
 
-* 20 conversations comme données d'apprentissage, et 4 conversations de test (2 HH et 2 HR).
+* 20 conversations pour l'entrainement, et 4 conversations de test (2 HH et 2 HR).
 * 5-fold cross-validation avec ensemble de test et de validation sur les 4 blocks :
    * Division des conversations en 4 blocks.
    * Sur chaque block, une conversation est extraite comme données de test.
@@ -97,8 +97,8 @@ Procédure:
 _Overfitting: cas du Support Vector Machines (SVM) (1/2)_
 
 Le classifieur SVM tente de séparer les données par un hyper-plan, avec la contrainte d'avoir une marge minimale
-(entre l'hyper-plan et les données) qui soit maximale. Le paramètre C détermine un compromis entre maximiser cette marge, 
-et autoriser la mauvaise classification de certains points : plus C est grand, plus les points mal classés sont exclus, 
+(entre l'hyper-plan et les données) qui soit maximale. Le paramètre C détermine un compromis entre maximiser cette marge,
+et autoriser la mauvaise classification de certains points : plus C est grand, plus les points mal classés sont exclus,
 et plus la marge aura tendance à être petite.
 
 \begin{figure}[H]
@@ -109,7 +109,7 @@ et plus la marge aura tendance à être petite.
 
 _Overfitting: cas du Support Vector Machines (SVM) (2/2)_
 
-Pour une valeur de C grande, SVM tentera de classer correctement chaque exemple d'apprentissage, au prix de la marge et 
+Pour une valeur de C grande, SVM tentera de classer correctement chaque exemple d'apprentissage, au prix de la marge et
 possiblement d'une meilleure capacité de généralisation:
 
 \begin{figure}[H]
@@ -118,7 +118,7 @@ possiblement d'une meilleure capacité de généralisation:
 
 ## Méthodes et techniques adaptées aux petits ensembles de données
 
-* Utiliser des algorithmes empiriquement plus adaptés aux petits ensembles de données (non exhaustif: Random Forests, 
+* Utiliser des algorithmes empiriquement plus adaptés aux petits ensembles de données (non exhaustif: Random Forests,
 Naïve Bayes ...)
 
 * Augmenter les données, pour:
@@ -149,7 +149,7 @@ Synthèse de nouveaux examples par interpolation d'exemples existants.
 
 * Réseaux de neurones dont les réseaux antagonistes génératifs (GAN)
 
-Un réseau apprend à générer des données, et est corrigé par un réseau apprenant à discriminer vraie donnée et donnée 
+Un réseau apprend à générer des données, et est corrigé par un réseau apprenant à discriminer vraie donnée et donnée
 générée (apprentissage souvent difficile).
 
 
@@ -167,9 +167,9 @@ générée (apprentissage souvent difficile).
 * GAN
 
   * peut nécessiter de grands volumes de données
-   
+
     * approche "fine-tuning", mais possible seulement si le domaine/la tâche est semblable, compliqué ici
- 
+
   * qualité / pertinence des données générées difficile à évaluer
 
 ## Application - Prédiction du sentiment de (co)présence
@@ -177,14 +177,11 @@ générée (apprentissage souvent difficile).
 * Random Sampling, SMOTE, ADASYN, ...
 
   * Faciles à mettre en oeuvre, variables continues interpolables
-  
+
   * Variables catégorielles: méthodes pour déterminer la catégorie de la nouvelle donnée (plus proches voisins ...)
-  
+
   * expérimentalement pas de réel avantage mesuré du moment que les métriques prennent en compte le déséquilibre de classes:
-  
+
 \begin{figure}[H]
 \includegraphics[width=0.65\textwidth]{figs/Oversampling-method_Presence_NB-G_test.png}
 \end{figure}
-
-  
-
