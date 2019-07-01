@@ -17,6 +17,7 @@ header-includes:
     - \usepackage{pgfkeys}
 ---
 
+
 ## Overfitting
 
 Le terme "overfitting" correspond au cas où le prédicteur modélise trop étroitement les données d'apprentissage (jusqu'à
@@ -42,26 +43,6 @@ les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capa
   * ajouter une régularisation (contrainte pour limiter la complexité du modèle)
 
   * augmenter les données
-
-
-## Méthodes et techniques adaptées aux petits ensembles de données
-
-* Utliser des algorithmes empiriquement plus adaptés aux petits ensembles de données (non exhaustif: Random Forests, 
-Naïve Bayes ...)
-
-* Augmenter les données, pour:
-
-  * obtenir un dataset plus grand
-
-  * et/ou réduire les déséquilibres entre classes
-
-* Diminuer l'influence du bruit / le biais, retirer les outliers
-
-  * auditer les exemples d'apprentissage existants
-
-  * régulariser l'apprentissage
-
- Sur un faible volume de données le bruit, les outliers, peuvent avoir un impact important.
 
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
@@ -96,13 +77,6 @@ mais on peut la faire marcher dans notre cas si on considère chaque  conversati
 \begin{figure}[H]
 \includegraphics[width=0.95\textwidth]{figs/cross2.pdf}
 \end{figure}
-
-## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
-### Génération de nouvelles données
-* Il serait intéréssant d'ajouter de nouvelles données si cela permet d'améliorer la qualité des prédictions.
-* Pour le moment, pour chaque sujet, nous avons 1200 observations, où chaque conversation contient 50 observations.
-* Ces observations présentent des auto-corrélations pour la plupart des variables.
-* Par conséquent, il faut générer des données de manière à tenir en compte ces auto-corrélations.
 
 ## Application - Prédiction du sentiment de (co)présence
 
@@ -142,6 +116,26 @@ possiblement d'une meilleure capacité de généralisation:
 \includegraphics[width=0.95\textwidth]{figs/svm-overfit.png}
 \end{figure}
 
+## Méthodes et techniques adaptées aux petits ensembles de données
+
+* Utiliser des algorithmes empiriquement plus adaptés aux petits ensembles de données (non exhaustif: Random Forests, 
+Naïve Bayes ...)
+
+* Augmenter les données, pour:
+
+  * obtenir un dataset plus grand
+
+  * et/ou réduire les déséquilibres entre classes
+
+* Diminuer l'influence du bruit / le biais, retirer les outliers
+
+  * auditer les exemples d'apprentissage existants
+
+  * régulariser l'apprentissage
+
+ Sur un faible volume de données le bruit, les outliers, peuvent avoir un impact important.
+
+
 ## Techniques pour la génération de nouvelles données
 
 * Random sampling
@@ -158,7 +152,17 @@ Synthèse de nouveaux examples par interpolation d'exemples existants.
 Un réseau apprend à générer des données, et est corrigé par un réseau apprenant à discriminer vraie donnée et donnée 
 générée (apprentissage souvent difficile).
 
-## Génération de données - application sur la prédiction de présence
+
+## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
+### Génération de nouvelles données
+* Il serait intéréssant d'ajouter de nouvelles données si cela permet d'améliorer la qualité des prédictions.
+* Pour le moment, pour chaque sujet, nous avons 1200 observations, où chaque conversation contient 50 observations.
+* Ces observations présentent des auto-corrélations pour la plupart des variables.
+* Par conséquent, il faut générer des données de manière à tenir en compte ces auto-corrélations.
+
+
+
+## Application - Prédiction du sentiment de (co)présence
 
 * GAN
 
@@ -168,7 +172,7 @@ générée (apprentissage souvent difficile).
  
   * qualité / pertinence des données générées difficile à évaluer
 
-## Génération de données - application sur la prédiction de présence
+## Application - Prédiction du sentiment de (co)présence
 
 * Random Sampling, SMOTE, ADASYN, ...
 
