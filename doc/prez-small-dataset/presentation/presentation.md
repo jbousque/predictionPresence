@@ -23,13 +23,15 @@ Le terme "overfitting" correspond au cas où le prédicteur modélise trop étro
 les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capacités sur de nouvelles données.
 
 * comment mesurer l'overfitting
-> (mesures oop, performances à 1, ect)
+
    * Evaluer la différence entre les erreurs des modèles sur les données de validation (entrainement) et les données de test.
     Example, utiliser des tests de signification statistiques.
 
+   * Employer des méthodologies non biaisées (qui révèlent overfitting ou underfitting, dans l'apprentissage et la sélection 
+   du modèle, voir par ex. <a href="http://www.jmlr.org/papers/volume11/cawley10a/cawley10a.pdf">Cawley et al. (2017)</a>)
+   
+   * Ne pas se limiter à la mesure de la précision
 
-
-* (pourquoi la k-cross validation est pas suffisant, pourquoi un corpus de validation peut permettre de pallier à cela, ect.)
 
 ## Overfitting
 
@@ -39,32 +41,27 @@ les apprendre "par coeur"), et de fait ne généralise pas ou très mal ses capa
 
   * ajouter une régularisation (contrainte pour limiter la complexité du modèle)
 
-  * augmenter les données en ajoutant des données bruitées
-
-  * prendre en compte l'overfitting sur la sélection du modèle (et pas seulement sur l'apprentissage)
- (voir http://www.jmlr.org/papers/volume11/cawley10a/cawley10a.pdf), choisir une méthodologie non biaisée
+  * augmenter les données
 
 
 ## Méthodes et techniques adaptées aux petits ensembles de données
 
-* Choix d'un algorithme adapté
+* Utliser des algorithmes empiriquement plus adaptés aux petits ensembles de données (non exhaustif: Random Forests, 
+Naïve Bayes ...)
 
-Non exhaustif: Random Forests, Naïve Bayes ...
-
-* Augmenter les données. Différentes techniques de génération de nouvelles données à partir des données existantes.
-Pour:
+* Augmenter les données, pour:
 
   * obtenir un dataset plus grand
 
   * et/ou réduire les déséquilibres entre classes
 
-* Diminuer le bruit / le biais dans les données, retirer les outliers
+* Diminuer l'influence du bruit / le biais, retirer les outliers
 
-  * auditer les échantillons existants
+  * auditer les exemples d'apprentissage existants
 
   * régulariser l'apprentissage
 
-  * sur un faible volume de données les outliers peuvent avoir un impact important
+ Sur un faible volume de données le bruit, les outliers, peuvent avoir un impact important.
 
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
@@ -82,7 +79,7 @@ mais on peut la faire marcher dans notre cas si on considère chaque  conversati
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
 ### Modélisation 1
 
-* 20 convesations comme données d'apprentissages, et 4 conversations de test (2 HH et 2 HR).
+* 20 conversations comme données d'apprentissage, et 4 conversations de test (2 HH et 2 HR).
 * 5-fold cross-validation avec ensemble de test et de validation sur les 4 blocks :
    * Division des conversations en 4 blocks.
    * Sur chaque block, une conversation est extraite comme données de test.
@@ -107,7 +104,7 @@ mais on peut la faire marcher dans notre cas si on considère chaque  conversati
 * Ces observations présentent des auto-corrélations pour la plupart des variables.
 * Par conséquent, il faut générer des données de manière à tenir en compte ces auto-corrélations.
 
-## Application - Prédiction du sentiment de présence/co-présence en fonction des signaux multimodaux
+## Application - Prédiction du sentiment de (co)présence
 
 Procédure:
 
@@ -121,64 +118,69 @@ Procédure:
 
   * moyennage des scores de test sur les 100 splits (avec calcul de l'erreur standard sur la moyenne)
 
-## Application - Prédiction du sentiment de présence/co-présence en fonction des signaux multimodaux
+## Application - Prédiction du sentiment de (co)présence
 
-Exemple d'overfitting: cas du SVM.
+_Overfitting: cas du Support Vector Machines (SVM) (1/2)_
 
-Le classifieur Support Vector Machine possède deux hyper-paramètres: C et gamma.
-Le SVM classifie en séparant les données par un hyper-plan, avec la contrainte d'avoir une marge minimale
-qui soit maximale (entre l'hyper-plan et les données). Le paramètre C influe sur le conflit entre maximiser
-cette marge, et avoir des points mal classés (plus C est grand, plus les points mal classés sont exclus, et plus la
-marge maximale a des chances d'être petite).
+Le classifieur SVM tente de séparer les données par un hyper-plan, avec la contrainte d'avoir une marge minimale
+(entre l'hyper-plan et les données) qui soit maximale. Le paramètre C détermine un compromis entre maximiser cette marge, 
+et autoriser la mauvaise classification de certains points : plus C est grand, plus les points mal classés sont exclus, 
+et plus la marge aura tendance à être petite.
 
-Un cas d'overfitting de ce classifieur peut se présenter si le paramètre C est 'trop' grand: le classifieur
-tente alors de classer correctement chaque exemple d'apprentissage, au prix de la marge et ainsi d'une certaine
-capacité de généralisation (la frontière de décision "épouse" les exemples d'apprentissage).
+\begin{figure}[H]
+\includegraphics[width=0.75\textwidth]{figs/GbW5S.png}
+\end{figure}
 
-Ci-dessous on visualise cet effet sur la prédiction de présence, la dimension des données est réduite à deux par
-PCA (Principal Component Analysis) afin de pouvoir visualiser le résultat et les frontières de décision:
+## Application - Prédiction du sentiment de (co)présence
 
-![alt text](figs/svm-overfit.png)
+_Overfitting: cas du Support Vector Machines (SVM) (2/2)_
 
-(note: gamma est également modifié pour amplifier l'effet que l'on souhaite montrer)
+Pour une valeur de C grande, SVM tentera de classer correctement chaque exemple d'apprentissage, au prix de la marge et 
+possiblement d'une meilleure capacité de généralisation:
+
+\begin{figure}[H]
+\includegraphics[width=0.95\textwidth]{figs/svm-overfit.png}
+\end{figure}
 
 ## Techniques pour la génération de nouvelles données
-> quelles sont les différentes techniques pour la génération de
-  nouvelles données ?
 
 * Random sampling
 
-Pas a proprement parler de génération de nouvelles données, mais un re-sampling du dataset original
-avec duplication d'échantillons (utilisé notamment pour résoudre les déséquilibres de classe en dupliquant
-des échantillons de la classe minoritaire)
+Re-sampling (tirage avec remise), utilisé notamment pour résoudre les déséquilibres de classe en répliquant
+des échantillons de la classe minoritaire.
 
 * SMOTE, ADASYN
 
-Techniques synthétisant de nouveaux échantillons à partir d'échantillons existant par interpolation.
-(pour les variables catégorielles, la catégorie retenue est la catégorie majoritaire parmis les plus proches voisins)
+Synthèse de nouveaux examples par interpolation d'exemples existants.
 
-* GAN
+* Réseaux de neurones dont les réseaux antagonistes génératifs (GAN)
 
-Les réseaux antagonistes génératifs peuvent être utilisés pour générer de nouvelles données, après leur avoir
-appris la distribution des données existantes.
-Un réseau génératif génère des données, le réseau adversaire discrimine entre une vraie donnée et une donnée générée.
-L'apprentissage demande généralement beaucoup de données et l'atteinte d'un point d'équilibre entre les deux réseaux.
+Un réseau apprend à générer des données, et est corrigé par un réseau apprenant à discriminer vraie donnée et donnée 
+générée (apprentissage souvent difficile).
 
 ## Génération de données - application sur la prédiction de présence
 
- > leurs limites ? peut-on les appliquées sur des
-  données comportementales comme les nôtres ?
+* GAN
 
- Les techniques basées sur le deep learning (GAN) demandent généralement de grands volumes de données.
- D'autre part, la validation de la génération des données est qualitative, ce qui est aisé lorsque les données
- sont des images, mais ici il est compliqué de vérifier la qualité des échantillons générés.
+  * peut nécessiter de grands volumes de données
+   
+    * approche "fine-tuning", mais possible seulement si le domaine/la tâche est semblable, compliqué ici
+ 
+  * qualité / pertinence des données générées difficile à évaluer
 
- Les autres techniques (random sampling, smote, adasyn, et leurs variantes) visent à corriger un déséquilibre entre classes
- en synthétisant des échantillons supplémentaires pour la classe minoritaire, l'argument étant que la plupart des algorithmes
- de machine learning sont moins performants lorsqu'il y a un tel déséquilibre.
- En pratique ici avec des déséquilibres moyennement importants (en pourcentage), l'efficacité de ses techniques
- n'est pas démontrée, du moment que le déséquilibre entre classes est correctement pris en compte pour le calcul
- des scores.
- D'autre part ces techniques se basent sur des échantillons existants, sans pouvoir discriminer si les échantillons choisis
- sont les plus représentatifs de la loi recherchée, ou si au contraire ils s'en éloignent le plus. SVM SMOTE utilise un classifieur
- SVM pour tenter d'améliorer ce point (là encore, avec des résultats peu significatifs dans notre cas).
+## Génération de données - application sur la prédiction de présence
+
+* Random Sampling, SMOTE, ADASYN, ...
+
+  * Faciles à mettre en oeuvre, variables continues interpolables
+  
+  * Variables catégorielles: méthodes pour déterminer la catégorie de la nouvelle donnée (plus proches voisins ...)
+  
+  * expérimentalement pas de réel avantage mesuré du moment que les métriques prennent en compte le déséquilibre de classes:
+  
+\begin{figure}[H]
+\includegraphics[width=0.65\textwidth]{figs/Oversampling-method_Presence_NB-G_test.png}
+\end{figure}
+
+  
+
