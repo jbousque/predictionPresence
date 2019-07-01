@@ -89,7 +89,7 @@ mais on peut la faire marcher dans notre cas si on considère chaque  conversati
    * Application d'une 5-fold cross-validation sur le reste des conversations.
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
-### Modélisation 1 : schéma
+### Modélisation 1 : un modèle pour toutes les conversations
 \begin{center}
 \includegraphics[width=0.95\textwidth]{figs/cross.pdf}
 \end{center}
@@ -99,6 +99,13 @@ mais on peut la faire marcher dans notre cas si on considère chaque  conversati
 \begin{figure}[H]
 \includegraphics[width=0.95\textwidth]{figs/cross2.pdf}
 \end{figure}
+
+## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
+### Génération de nouvelles données
+* Il serait intéréssant d'ajouter de nouvelles données si cela permet d'améliorer la qualité des prédictions.
+* Pour le moment, pour chaque sujet, nous avons 1200 observations, où chaque conversation contient 50 observations.
+* Ces observations présentent des auto-corrélations pour la plupart des variables.
+* Par conséquent, il faut générer des données de manière à tenir en compte ces auto-corrélations.
 
 ## Application - Prédiction du sentiment de présence/co-présence en fonction des signaux multimodaux
 
