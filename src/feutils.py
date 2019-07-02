@@ -195,7 +195,7 @@ class FEUtils():
 
         return outerArr
 
-    def compute_mrr(self, y_true, y_pred, labels):
+    def compute_mrr(self, y_true, y_pred, labels, verbose=0):
         """
         Compute the mean reciprocal rank (as y_true provides only one label as relevant).
         :param y_true: (nb samples)
@@ -203,7 +203,8 @@ class FEUtils():
         :param labels: (nb classes)
         :return: the mean reciprocal rank.
         """
-        print('compute_mrr(y_true %s, y_pred %s, labels %s' % (str(y_true), str(y_pred), str(labels)))
+        if verbose > 2:
+            print('compute_mrr(y_true %s, y_pred %s, labels %s' % (str(y_true), str(y_pred), str(labels)))
         if type(y_true) is np.ndarray:
             y_true = pd.DataFrame(y_true)
         if type(y_pred) is np.ndarray:
@@ -215,7 +216,7 @@ class FEUtils():
         if y_true.to_numpy().ndim == 1:
             y_true = pd.DataFrame(y_true.to_numpy()[:, np.newaxis])
         y_score = np.zeros(y_pred.values.shape)
-        print(y_pred.to_numpy().shape)
+        #print(y_pred.to_numpy().shape)
         for i in np.arange(y_score.shape[1]):
             col = y_pred.iloc[:, i]
             if len(labels)> 2:
@@ -238,9 +239,10 @@ class FEUtils():
                 else:
                     y_true_bin_[irow, 1] = 1
             y_true_bin = y_true_bin_
-        print('y_true_bin %s y_score %s' % (y_true_bin.shape, y_score.shape))
-        print(y_true_bin)
-        print(y_score) # TODO check why even when ndim=1, when y_pred is wrong, there is 0,1 or 1,0 in binarized y_pred ???
+        if verbose > 5:
+            print('y_true_bin %s y_score %s' % (y_true_bin.shape, y_score.shape))
+            print(y_true_bin)
+            print(y_score) # TODO check why even when ndim=1, when y_pred is wrong, there is 0,1 or 1,0 in binarized y_pred ???
         return label_ranking_average_precision_score(y_true_bin, y_score)
 
     def compute_determinacy(self, y_pred):
@@ -332,9 +334,10 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
 
     logger_ = logging.getLogger(__name__)
 
-    def __init__(self, dataHandler=None, idx=None):
+    def __init__(self, dataHandler=None, idx=None, verbose=0):
         self.logger_.debug('JNCC2Wrapper(dataHandler=%s)' % str(dataHandler))
-        print('JNCC2Wrapper(dataHandler=%s)' % str(dataHandler))
+        if verbose > 1:
+            print('JNCC2Wrapper(dataHandler=%s)' % str(dataHandler))
         self.dataHandler = dataHandler
         if dataHandler is not None:
             self.arff_root_path_ = os.path.join(self.dataHandler.root_path, 'arff')
@@ -346,6 +349,7 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         self.y_train_ = None
         self.X_test_ = None
         self.y_test_ = None
+        self.verbose_ = verbose
         self.logger_.debug('JNCC2Wrapper: initialized arff_root_path_ to %s' % self.arff_root_path_)
 
     def _generate_arff(self, X, y, file_name, features=None):
@@ -358,10 +362,11 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         :param features: optional (then generated as x0, x1, ..., or retrieved from columns if X is a DataFrame)
         :return:
         """
-        self.logger_.debug('generate_arff(file_name=%s, features=%s, X shape=%s)'
-                           % (file_name, str(features), str(X.shape)))
-        print('generate_arff(fname=%s, features=%s, X shape=%s'
-              % (file_name, str(features), str(X.shape)))
+        if self.verbose_ > 1:
+            self.logger_.debug('generate_arff(file_name=%s, features=%s, X shape=%s)'
+                               % (file_name, str(features), str(X.shape)))
+            print('generate_arff(fname=%s, features=%s, X shape=%s'
+                  % (file_name, str(features), str(X.shape)))
 
         # create path if it does not exist
         if not os.path.exists(os.path.dirname(file_name)): os.makedirs(os.path.dirname(file_name))
@@ -416,18 +421,21 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         text_file.close()
 
     def _cv(self, train_arff_file, idx=None):
-        self.logger_.debug('cv(train_arff_file=%s)' % train_arff_file)
-        print('cv(train_arff_file=%s, idx=%s)' % (train_arff_file, str(idx)))
+        if self.verbose_ > 1:
+            self.logger_.debug('cv(train_arff_file=%s)' % train_arff_file)
+            print('cv(train_arff_file=%s, idx=%s)' % (train_arff_file, str(idx)))
         if idx is not None:
             path = os.path.join(self.arff_root_path_, str(idx))
         else:
             path = self.arff_root_path_
         cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, 'cv']
-        self.logger_.debug('cv: Executing' + subprocess.list2cmdline(cmd))
-        print("cv: Executing " + subprocess.list2cmdline(cmd))
+        if self.verbose_ > 2:
+            self.logger_.debug('cv: Executing' + subprocess.list2cmdline(cmd))
+            print("cv: Executing " + subprocess.list2cmdline(cmd))
         output = subprocess.check_output(cmd)
-        self.logger_.info(output)
-        print(output)
+        if self.verbose_ > 2:
+            self.logger_.info(output)
+            print(output)
 
         # load result
         rfile = os.path.join(path, 'Predictions-CV-train.csv')
@@ -452,13 +460,15 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
                 y_trues.append(rdf[rdf['real_id'] == i].iloc(axis=1)[1].values)
             #res = rdf.iloc(axis=1)[0:-1]
             self.logger_.debug('cv: return %s x %s' % (str(len(res)), str(res[0].shape)))
-            print('cv: return %s x %s' % (str(len(res)), str(res[0].shape)))
+            if self.verbose_ > 1:
+                print('cv: return %s x %s' % (str(len(res)), str(res[0].shape)))
             return res, y_trues
 
 
     def _predict(self, train_arff_file, test_arff_file, idx=None):
-        self.logger_.debug('predict(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
-        print('predict(train_arff_file=%s, test_arff_file=%s, idx=%s)' % (train_arff_file, test_arff_file, str(idx)))
+        if self.verbose_ > 1:
+            self.logger_.debug('predict(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
+            print('predict(train_arff_file=%s, test_arff_file=%s, idx=%s)' % (train_arff_file, test_arff_file, str(idx)))
 
         # is this a complete path or only a file name ?
         if os.sep in train_arff_file:
@@ -469,11 +479,13 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         else:
             path = self.arff_root_path_
         cmd = ['java', '-jar', config.JNCC2_JAR, path, os.path.basename(train_arff_file), os.path.basename(test_arff_file)]
-        self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
-        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        if self.verbose_ > 2:
+            self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
+            print("predict: Executing " + subprocess.list2cmdline(cmd))
         output = subprocess.check_output(cmd)
-        self.logger_.info(output)
-        print(output)
+        if self.verbose_ > 2:
+            self.logger_.info(output)
+            print(output)
 
         # load result
         rfile = os.path.join(path, 'Predictions-Testing-test.csv')
@@ -483,13 +495,15 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             #print(rdf)
             res = rdf.iloc(axis=1)[2:-1]
             y_true = rdf.iloc(axis=1)[1]
-            self.logger_.debug('predict: return %s' % str(res.shape))
-            #print('predict: return %s' % str(res.shape))
+            if self.verbose_ > 1:
+                self.logger_.debug('predict: return %s' % str(res.shape))
+                print('predict: return %s' % str(res.shape))
             return res
 
     def _predict_unknownclasses(self, train_arff_file, test_arff_file):
-        self.logger_.debug('_predict_unknownclasses(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
-        print('_predict_unknownclasses(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
+        if self.verbose_ > 1:
+            self.logger_.debug('_predict_unknownclasses(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
+            print('_predict_unknownclasses(train_arff_file=%s, test_arff_file=%s)' % (train_arff_file, test_arff_file))
 
         # is this a complete path or only a file name ?
         if os.sep in train_arff_file:
@@ -498,11 +512,13 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             path = self.arff_root_path_
         cmd = ['java', '-jar', config.JNCC2_JAR, path, os.path.basename(train_arff_file),
                os.path.basename(test_arff_file), 'unknownclasses']
-        self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
-        print("predict: Executing " + subprocess.list2cmdline(cmd))
+        if self.verbose_ > 2:
+            self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
+            print("predict: Executing " + subprocess.list2cmdline(cmd))
         output = subprocess.check_output(cmd)
-        self.logger_.info(output)
-        print(output)
+        if self.verbose_ > 2:
+            self.logger_.info(output)
+            print(output)
 
         # load result
         # note: csv file format is different in this case for unknown reason ... We must first remove heading lines
@@ -518,12 +534,17 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
                 if 'Ncc2Prediction' in line:
                     break
             csv_string = "".join(lines[idx+2:len(lines)])
-            print(csv_string)
+            if self.verbose_ > 5:
+                print(csv_string)
             rdf = pd.read_csv(StringIO(csv_string), header=None)
-            print(rdf)
-            print('JNCC2Wrapper._predict_unknownclasses return:')
-            print(rdf.iloc(axis=1)[-3])
+            if self.verbose_ > 5:
+                print(rdf)
+            if self.verbose_ > 1:
+                print('JNCC2Wrapper._predict_unknownclasses return:')
+                print(rdf.iloc(axis=1)[-3])
             return rdf.iloc(axis=1)[-3]
+        if self.verbose_ > 1:
+            print('JNCC2Wrapper._predict_unknownclasses return None')
         return None
 
     def fit(self, X, y=None):
@@ -533,14 +554,16 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         :param y:
         :return:
         """
-        print('JNCC2Wrapper.fit(X=%s, y=%s)' % (X.to_numpy().shape if isinstance(X, pd.DataFrame) else X.shape,
+        if self.verbose_ > 1:
+            print('JNCC2Wrapper.fit(X=%s, y=%s)' % (X.to_numpy().shape if isinstance(X, pd.DataFrame) else X.shape,
                                                 y.shape if y is not None else 'None'))
         m = hashlib.md5()
         m.update(str(np.array(X)))
         hash = m.hexdigest()
         if self.arff_root_path_ is None:
             self.__init__(self.dataHandler, self.idx)
-        print('JNCC2Wrapper.fit: root_path %s, hash %s' % (self.arff_root_path_, str(hash)))
+        if self.verbose_ > 2:
+            print('JNCC2Wrapper.fit: root_path %s, hash %s' % (self.arff_root_path_, str(hash)))
         self.arff_train_file_ = os.path.join(self.arff_root_path_, hash, 'train')
         if not os.path.isfile(self.arff_train_file_):
             self._generate_arff(X, y, self.arff_train_file_)
