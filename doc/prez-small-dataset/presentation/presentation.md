@@ -15,7 +15,83 @@ header-includes:
     - \usepackage{multirow}
     - \usepackage{subfig}
     - \usepackage{pgfkeys}
+    - \usepackage{amsmath}
 ---
+
+## Apprentissage automatique
+
+Algorithmes permettant de résoudre un problème, une tâche, en apprenant des données - lorsqu'il n'est pas possible
+ou complexe d'écrire un algorithme pour résoudre la tâche.
+
+$$
+X = \begin{pmatrix} 
+x_{11} & x_{12} & ... & x_{1p} \\
+x_{21} & x_{22} & ... & x_{2p} \\
+... & ... & ... & ... \\
+x_{n1} & x_{n2} & ... & x_{np} 
+\end{pmatrix}
+\text{ et } 
+y =  \begin{pmatrix} 
+y_{1} \\
+y_{2}  \\
+...  \\
+y_{n}  
+\end{pmatrix} $$ 
+
+* Chaque ligne de $X$ est une donnée structurée (un exemple), composée de $p$ variables (features)
+* A chaque exemple est associée une cible $y_{i}$, ce que l'on souhaite prédire
+* $f(X)=y+\epsilon$ est ce que l'algorithme cherche à approximer au mieux ($\epsilon$ l'erreur)
+* Si les $y_{i}$ sont continus on parle de tâche de régression, s'ils sont discrets on parle de tâche de 
+classification
+
+## Apprentissage automatique
+
+Classification: reconnaître un objet dans une image (chaque ligne de X est une image, les $p$
+variables représentant les pixels de l'image, et par exemple
+$y \in \{chien, chat, ours, ...\}$)
+
+Régression: prédiction du prix de vente d'une maison en fonction de critères (les $p$ variables sont les critères, superficie, nombre de chambres, etc, et
+$y$ est le prix de vente)
+
+Les programmes utilisant ces algorithmes ont deux phases:
+
+* Apprentissage: on approxime $f(X)=y$, $X$ et $y$ étant connus (apprentissage supervisé)
+
+* Inférence: on prédit $y$ à partir de $f$ apprise et de nouvelles données $X^{'}$ pour lesquelles $y^{'}$ 
+peut être connu (pour tester l'apprentissage) ou pas (problème réel).
+
+D'autres formes d'apprentissage existent, par ex. non supervisé (pas de $y$, par exemple le clustering
+qui vise à détecter des groupements au sein des $X$)
+
+## Apprentissage automatique
+
+* Biais inductif: on commence par faire une hypothèse dans le choix d'une famille de fonctions $\mathbb{H}$
+ pour $f$ (ex. pour la
+régression: polynomiale, logistique..., pour la classification: Support Vector Machines, Bayésien, 
+réseau de neurones ...)
+
+* L'erreur commise sur plusieurs jeux de données peut se décomposer en biais et variance. 
+
+* Le biais est l'écart entre la fonction de prédiction moyenne apprise sur plusieurs jeux de données, 
+et la fonction qui minimise l'erreur d'apprentissage (perte)
+
+* La variance est l'écart entre la fonction de prédiction moyenne apprise sur plusieurs jeux de données,
+et une fonction de prédiction apprise sur un jeu de données
+
+## Apprentissage automatique
+
+Le biais et la variance sont liés:
+
+* Si la complexité du modèle $\mathbb{H}$ choisi est faible, le biais sera important et la variance faible
+
+* Si la complexité du modèle $\mathbb{H}$ choisi est forte, le biais sera faible mais la variance importante
+
+\begin{figure}[H]
+\includegraphics[width=0.75\textwidth]{figs/biais-variance.png}
+\end{figure}
+
+Si le biais est trop important on parle de sous-apprentissage. Si la variance est trop importante on parle de 
+sur-apprentissage (overfitting).
 
 
 ## Overfitting
