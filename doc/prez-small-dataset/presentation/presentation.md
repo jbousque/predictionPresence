@@ -16,7 +16,13 @@ header-includes:
     - \usepackage{subfig}
     - \usepackage{pgfkeys}
     - \usepackage{amsmath}
+    - \usepackage[short]{optidef}
+    - \usepackage{amssymb}
+   
+font-size: 10pt
 ---
+
+# Apprentissage et sur-apprentissage
 
 ## Apprentissage automatique - problématique
 
@@ -36,13 +42,14 @@ y_{1} \\
 y_{2}  \\
 ...  \\
 y_{n}  
-\end{pmatrix} $$ 
+\end{pmatrix}
+\text{, on suppose }  y=f(X)+\epsilon $$ 
 
 * Chaque ligne de $X$ est une donnée structurée (un exemple), composée de $p$ variables (features)
 * A chaque exemple est associée une cible $y_{i}$, ce que l'on souhaite prédire
-* $y=f(X)+\epsilon$ est ce que l'algorithme cherche à approximer au mieux ($\epsilon$ l'erreur)
+* $y=f(X)+\epsilon$ est ce que l'algorithme cherche à approximer ($\epsilon$: l'erreur)
 * Si les $y_{i}$ sont continus on parle de tâche de régression, s'ils sont discrets on parle de tâche de 
-classification
+classification.
 
 ## Apprentissage automatique - problématique
 
@@ -53,60 +60,55 @@ $y \in \{chien, chat, ours, ...\}$)
 Régression: prédiction du prix de vente d'une maison en fonction de critères (les $p$ variables sont les critères, superficie, nombre de chambres, etc, et
 $y$ est le prix de vente)
 
-Les programmes utilisant ces algorithmes ont deux phases:
+Ces algorithmes sont généralement utilisés en deux phases:
 
-* Apprentissage: on approxime $f(X)=y$, $X$ et $y$ étant connus (apprentissage supervisé), obtenant $\hat{f}$
+* Apprentissage: on approxime $f(X)=y$, $X$ et $y$ étant connus (apprentissage supervisé), $\Rightarrow \hat{f}$
 
-* Inférence: on prédit $y$ à partir de $f$ apprise et de nouvelles données $X^{'}$ pour lesquelles $y^{'}$ 
+* Inférence: on prédit $y'$ à partir de $\hat{f}$ apprise et de nouvelles données $X'$ pour lesquelles $y'$ attendu 
 peut être connu (pour tester l'apprentissage) ou pas (problème réel).
 
-D'autres formes d'apprentissage existent, par ex. non supervisé (pas de $y$, par exemple le clustering
-qui vise à détecter des groupements au sein des $X$)
+Autres formes d'apprentissage : non supervisé (pas de $y$, ex. clustering), partiellement supervisé, multi-label 
+($y_i$ a $n$ dimensions), ...
 
 ## Apprentissage automatique - dilemme biais-variance
 
 * Biais inductif: on commence par faire une hypothèse dans le choix d'une famille de fonctions $\mathbb{H}$
- pour $f$ (ex. pour la
+ pour approximer $f$ (ex. pour la
 régression: polynomiale, logistique..., pour la classification: Support Vector Machines, Bayésien, 
-réseau de neurones ...)
+réseau de neurones ...).
 
 * L'erreur commise sur plusieurs jeux de données peut se décomposer en biais, variance, et une erreur irréductible
 liée au bruit dans les données du problème. 
 
 $$E[(y - \hat{f}(x))^{2}] = Biais[\hat{f}(x)^{2}] + Var[\hat{f}(x)] + \sigma^{2}$$
 
-* Le biais est l'écart entre la fonction de prédiction moyenne $\hat{f}$ apprise sur plusieurs jeux de données, 
-et la fonction recherchée $f$
+* Biais : écart entre la fonction de prédiction moyenne $\hat{f}$ apprise sur plusieurs jeux de données, 
+et la fonction recherchée $f$,
 
-* La variance est l'écart entre la fonction de prédiction moyenne apprise sur plusieurs jeux de données,
-et une fonction de prédiction apprise sur un seul jeu de données
+* Variance : écart entre la fonction de prédiction moyenne apprise sur plusieurs jeux de données,
+et une fonction de prédiction apprise sur un seul jeu de données.
 
 
 ## Apprentissage automatique - dilemme biais-variance
 
-Le biais et la variance sont liés:
-
 * Si la complexité du modèle $\mathbb{H}$ choisi est faible, le biais sera important et la variance faible
 
-* Si la complexité du modèle $\mathbb{H}$ choisi est forte, le biais sera faible mais la variance importante
+* Si la complexité du modèle $\mathbb{H}$ choisi est forte, le biais sera faible et la variance importante
 
 \begin{figure}[H]
-\includegraphics[width=0.65\textwidth]{figs/biais-variance.png}
+\includegraphics[width=0.45\textwidth]{figs/biais-variance.png}
 \end{figure}
 
 Si le biais est trop important on parle de sous-apprentissage. Si la variance est trop importante on parle de 
-sur-apprentissage (overfitting).
-
-(voir aussi https://eric.univ-lyon2.fr/~jahpine/cours/m2_dm-ml/cm.pdf)
+sur-apprentissage (overfitting - une variation même faible des données, peut engendrer une réponse très différente
+de l'algorithme).
+(voir aussi [ce cours](https://eric.univ-lyon2.fr/~jahpine/cours/m2_dm-ml/cm.pdf))
 
 ## Overfitting - comment le mesurer ?
 
-Le terme "overfitting" correspond au cas où le prédicteur modélise trop étroitement les données d'apprentissage (jusqu'à
-les apprendre "par coeur").
-Le biais est minimal mais la forte variance pénalise la capacité de généralisation à de nouvelles données.
-
-* Evaluer la différence entre les erreurs des modèles sur les données de validation (entrainement) 
-et les données de test. Exemple, utiliser des tests de signification statistiques.
+* Evaluer la différence entre les erreurs des modèles sur les données d'apprentissage, de validation, 
+et de test. Pour la régression, on peut appliquer des tests statistiques, pour la classification il est préférable
+d'évaluer la variance des performances mesurées (en effectuant plusieurs mesures).
 
 Généralement on découpe les données en trois ensembles distincts : données d'apprentissage
 (le modèle ajuste ses paramètres internes sur ces données), données de validation (pour choisir les meilleurs 
@@ -119,7 +121,7 @@ utilisés), et données de test
 * Eviter les biais méthodologiques (cf. par ex. <a href="http://www.jmlr.org/papers/volume11/cawley10a/cawley10a.pdf">Cawley et al. (2017)</a>)
 Exemples:
 
-   * Si des données sont utilisées pour apprendre ou sélectionner un modèle, alors elles ne doivent pas
+   * Si des données sont utilisées pour apprendre __ou sélectionner__ un modèle, alors elles ne doivent pas
      servir à évaluer ce modèle (risque d'overfitting sur l'apprentissage mais aussi sur la sélection du modèle).
 
    * Etre attentif aux métriques permettant d'évaluer objectivement le modèle (ex. pour la classification, ne
@@ -133,7 +135,7 @@ Exemples:
 
 ## Overfitting - comment l'éviter ?
 
-* Des méthodes existent, généralement très dépendantes de la famille de modèles choisie ($\mathbb{H}$)
+Des méthodes existent, généralement très dépendantes de la famille de modèles choisie ($\mathbb{H}$)
 
 * Contraindre les valeurs d'hyper-paramètres recherchés suivant la connaissance de la famille de modèle.
 
@@ -141,25 +143,36 @@ Par exemple des valeurs extrêmes pour $C$ et $\gamma$ pour les SVMs peuvent enc
 de règle absolue) - les hyper-paramètres peuvent en fait influer sur la complexité du modèle (et donc le
 dilemme biais-variance).
 Les connaissances empiriques et théoriques sur chaque famille de modèle peuvent permettre d'ajuster la recherche
-d'hyper-paramètres dans l'espoir d'éviter l'overfitting (mais aussi l'underfitting bien sûr).
+d'hyper-paramètres pour éviter sous- et sur-apprentissage.
 
-()
 
 ## Overfitting - comment l'éviter ?
 
-* Régulariser l'apprentissage (lorsque cela est possible).
+* Régulariser l'apprentissage
+
   Suivant la famille de modèles, la régularisation consiste à ajouter un terme de contrainte dans la fonction de
   perte,
-  l'objectif étant (généralement) de pénaliser les modèles trop complexes lors de l'apprentissage.
+  l'objectif étant généralement de pénaliser les modèles trop complexes lors de l'apprentissage.
   Note: la fonction de perte (ou coût) est une fonction que l'on cherche à minimiser lors de l'apprentissage.
- 
-Régression Ridge:
+  Limiter la complexité d'un modèle revient généralement à limiter l'espace de recherche de ses paramètres
+  (on ne parle ici que des modèles paramétriques).
+  
+  Par exemple:
+  
+  * la régularisation $l_2$ contraint des paramètres "petits" (proches de zéro)
+  
+  * la régularisation $l_1$ contraint des solutions parcimonieuses (comportant des paramètres nuls)
+  
+## Overfitting - comment l'éviter ?
+
+Exemple: Régression Ridge:
   
 $$ \sum_{i=1}^{n} (y_{i} - \sum_{j=1}^{p} x_{ij}\beta_{j})^{2} + \boxed{ \lambda \sum_{j=1}^{p} \beta_{j}^{2} } $$
 
-Les $\beta_{j}$ forment la matrice que l'algorithme cherche à apprendre en minimisant cette fonction
-de coût. La présence du terme L1 contraint l'algorithme à tendre vers des solutions $\beta_{j}$ "petites", donc à
-limiter l'espace de recherche des solutions, donc à limiter la complexité du modèle.
+Les $\beta_{j}$ forment les poids que l'algorithme cherche à apprendre en minimisant cette fonction
+de coût. La présence du terme de pénalisation $l_2$ contraint l'algorithme à tendre vers des solutions $\beta_{j}$ 
+"petites", donc à limiter l'espace de recherche des solutions, donc à limiter la complexité du modèle. L'importance 
+de cette régularisation est conditionnée par le paramètre $\lambda$.
  
 ## Overfitting - comment l'éviter ?
  
@@ -169,8 +182,9 @@ On entend ici ajouter de nouvelles données synthétisées à partir des donnée
 suivant différentes méthodes (pour des images, on peut ajouter de nouvelles images en appliquant des transformations
 de type flip, rotations, bruit gaussien, recadrages, etc).
 
-Paradoxalement en augmentant le bruit dans les données, à complexité équivalent le modèle aura plus de difficultés
-à s'adapter étroitement aux données, la variance aura tendance à être plus faible ainsi que l'overfitting.
+En augmentant le bruit dans les données, à complexité équivalente il sera plus "difficile" pour le
+modèle de s'adapter étroitement aux données, la variance aura tendance à être plus faible ainsi que l'overfitting.
+Ce "bruit" ne doit cependant pas masquer l'information que l'on cherche à apprendre.
 
 
 ## Application - Prédiction de l'activité cérébrale en fonction des signaux multimodaux
@@ -212,13 +226,16 @@ Méthodologie:
 
 * discrétisation des scores de présence/co-présence en problèmes de classification binaire
 
-* 10x 10-folds (90% train / 10% test), splits aléatoires stratifiés (= conservant les proportions de chaque classe)
+* $n \times \text{10-folds}$ (90% train / 10% test), splits aléatoires stratifiés (= conservant les proportions de 
+chaque classe)
 
-  * 10-fold cross-validation sur l'ensemble train (du coup train+validation) pour la recherche d'hyper-paramètres du modèle
+  * 10-fold cross-validation sur l'ensemble train pour la recherche d'hyper-paramètres du modèle (chaque fold sert
+  d'ensemble de validation à son tour)
 
-  * évaluation de la capacité de prédiction sur l'ensemble test (non vu lors de l'apprentissage)
+  * évaluation de la capacité de prédiction sur l'ensemble test (non vu lors de l'apprentissage ou de la sélection
+  de modèle)
 
-  * moyennage des scores de test sur les 10x10 splits (avec calcul de l'intervalle de confiance)
+  * moyennage des scores de test sur les $n \times 10$ splits (avec calcul de variance et intervalle de confiance)
   
 ## Application - Prédiction du sentiment de (co)présence
 
@@ -228,32 +245,89 @@ Méthodologie:
 
 ## Application - Prédiction du sentiment de (co)présence
 
-_Overfitting: cas du Support Vector Machines (SVM) (1/2)_
+### Overfitting: cas du Support Vector Machines (SVM) (1/4)
 
-Le classifieur SVM tente de séparer les données par un hyper-plan, avec la contrainte d'avoir une marge minimale
-(entre l'hyper-plan et les données) qui soit maximale. Le paramètre C détermine un compromis entre maximiser cette marge,
-et autoriser la mauvaise classification de certains points : plus C est grand, plus les points mal classés sont exclus,
-et plus la marge aura tendance à être petite.
+Le classifieur SVM peut-être vu comme un problème d'optimisation sous contrainte, le but étant de séparer l'espace 
+des données par un hyper-plan, en maximisant une marge entre hyper-plan et données.
 
 \begin{figure}[H]
-\includegraphics[width=0.75\textwidth]{figs/GbW5S.png}
+\includegraphics[width=0.35\textwidth]{figs/SVM_margin.png}
 \end{figure}
+
+```{=latex}
+\begin{mini*}|l|
+    {w,b}{\frac{1}{2}\left\Vert w \right\Vert}{}{}
+    \addConstraint{y_{i}(w^t.x_i+b)}{\geq 1}{}
+\end{mini*}
+```
 
 ## Application - Prédiction du sentiment de (co)présence
 
-_Overfitting: cas du Support Vector Machines (SVM) (2/2)_
+### Overfitting: cas du Support Vector Machines (SVM) (2/4)
 
-Pour une valeur de C grande, SVM tentera de classer correctement chaque exemple d'apprentissage, au prix de la marge et
-possiblement d'une meilleure capacité de généralisation:
+Il n'est pas forcément possible de séparer linéairement les données pour tout problème de classification. Parfois,
+des exemples d'apprentissage dits "outliers", trop excentriques, peuvent rendre le problème impossible à résoudre.
+Afin de relâcher la contrainte et autoriser la mauvaise classification de certains exemples, sont introduites les
+slacks variables $\xi_{i}$:
+
+```{=latex}
+\begin{mini*}|l|
+    {w,b}{\frac{1}{2}\left\Vert w \right\Vert+C\sum_{i=1}^{n} \xi_{i}}{}{}
+    \addConstraint{y_{i}(w^t.x_i+b)}{\geq 1 - \xi_i}{}
+\end{mini*}
+```
+
+Le terme à minimiser $C\sum_{i=1}^{n}\xi_{i}$ limite l'influence des slacks variables et est conditionné par $C$ qui 
+est un des hyper-paramètres du SVM.
+
+## Application - Préduction du sentiment de (co)présence
+
+### Overfitting: cas du Support Vector Machines (SVM) (3/4)
 
 \begin{figure}[H]
-\includegraphics[width=0.95\textwidth]{figs/svm-overfit.png}
+\includegraphics[width=0.45\textwidth]{figs/slack.png}
 \end{figure}
+
+Plus la valeur de C est grande, moins les points "outliers" sont autorisés, et plus la marge aura tendance à être 
+petite. A l'inverse, plus C est petit, plus on autorise les "outliers" et plus la marge aura tendance à être grande.
+
+Il faut donc trouver le meilleur compromis pour obtenir une frontière de séparation et une marge qui permette une bonne
+classification des exemples d'apprentissage, tout en conservant sa capacité de généralisation pour des points non
+vus lors de l'apprentissage.
+
+## Application - Prédiction du sentiment de (co)présence
+
+### Overfitting: cas du Support Vector Machines (SVM) (4/4)
+
+\begin{figure}[H]
+\includegraphics[width=0.75\textwidth]{figs/svm-overfit.png}
+\end{figure}
+
+Le score d'apprentissage augmente quand C augmente (on autorise moins d'outliers donc moins d'exemples incorrectement
+classifiés), mais le score de test ne s'améliore pas au contraire. 
+Le biais du classifieur se réduit, mais logiquement sa variance augmente, et les résultats sur l'ensemble de test 
+peuvent montrer une grande variabilité (par exemple ici le score de test n'est pas minimal pour C=100, bien que
+l'overfitting soit flagrant).
+
+# Méthodes et techniques adaptées aux petits ensembles de données
 
 ## Méthodes et techniques adaptées aux petits ensembles de données
 
-* Utiliser des algorithmes empiriquement plus adaptés aux petits ensembles de données (non exhaustif: Random Forests,
-Naïve Bayes ...)
+* Utiliser des algorithmes reconnus pour leurs bonnes performances sur les petits ensembles de données (cf. par
+exemple [C.Salperwyck et V.Lemaire 2010](http://www.vincentlemaire-labs.fr/publis/egc_cidn_2010_camera_ready.pdf), 
+[Bergtold et al. 2011](https://www.researchgate.net/publication/254384368_Sample_Size_and_Robustness_of_Inferences_from_Logistic_Regression_in_the_Presence_of_Nonlinearity_and_Multicollinearity/link/546633240cf2f5eb180168d4/download))
+
+  * *Random Forests* (ensemble d'arbres de décision entraînés sur des réalisations différentes de l'ensemble de 
+  données d'origine, leurs nombre et variations peuvent compenser la variance dûe à un petit ensemble de données)
+ 
+  * *Bayésien naïf* (probabilités calculées avec le postulat de variables non corrélées)
+  
+  * *Régression logistique* (classification binaire)
+  
+... mais tout algorithme __peut__ convenir (probablement sous réserve de ne pas être trop complexe), seuls des tests 
+peuvent réellement renseigner sur l'algorithme le plus approprié.
+
+## Méthodes et techniques adaptées aux petits ensembles de données
 
 * Augmenter les données, pour:
 
@@ -263,11 +337,14 @@ Naïve Bayes ...)
 
 * Diminuer l'influence du bruit / le biais, retirer les outliers
 
-  * auditer les exemples d'apprentissage existants
+  * retirer les "outliers" manifestement hors de la distribution normale des échantillons (erreurs de mesures
+flagrantes par exemple) - certains algorithmes (SVM) peuvent aider à la sélection d'échantillons.
 
   * régulariser l'apprentissage
 
  Sur un faible volume de données le bruit, les outliers, peuvent avoir un impact important.
+ De façon générale, éviter les modèles trop complexes, qui risquent d'overfitter rapidement sur un faible volume
+ de données.
 
 
 ## Techniques pour la génération de nouvelles données
