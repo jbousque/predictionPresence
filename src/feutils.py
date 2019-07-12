@@ -405,9 +405,10 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
         if y is None:
             Yarr = [np.nan]*Xarr.shape[0]
         else:
-            Yarr = y
+            Yarr = np.array(y)
+        #print('XArr %s, Yarr %s' % (str(Xarr), str(Yarr)))
         for idx, (x_, y_) in enumerate(zip(Xarr, Yarr)):
-
+            #print('   x_ %s, y_ %s' % (str(x_), str(y_)))
             line = ''
             for idx, feature in enumerate(features):
                 if feature == 'Expert' or set(np.unique(X[feature])).issubset({0,1}):
@@ -533,8 +534,14 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             # find the heading lines to find starting row
             frfile = open(rfile, 'r')
             lines = frfile.readlines()
+            nccpred_column = None
             for idx, line in enumerate(lines):
                 if 'Ncc2Prediction' in line:
+                    #print('line ' + str(line))
+                    #print('splitted line ' + str(line.split(',')))
+                    splitted = [item.replace('\n','') for item in line.split(',')]
+                    nccpred_column = splitted.index('Ncc2Prediction')
+                    #print('Pred starting column %d' % nccpred_column)
                     break
             csv_string = "".join(lines[idx+2:len(lines)])
             if self.verbose > 5:
@@ -542,10 +549,15 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             rdf = pd.read_csv(StringIO(csv_string), header=None)
             if self.verbose > 5:
                 print(rdf)
+            result = rdf.iloc(axis=1)[nccpred_column:-1]
+            result[result == '-'] = np.nan
+            #result = result.dropna(axis='columns', how='any')
+            result = result.iloc(axis=1)[0]
             if self.verbose > 1:
                 print('JNCC2Wrapper._predict_unknownclasses return:')
-                print(rdf.iloc(axis=1)[-3])
-            return rdf.iloc(axis=1)[-3]
+                print(result)
+
+            return result
         if self.verbose > 1:
             print('JNCC2Wrapper._predict_unknownclasses return None')
         return None
@@ -561,7 +573,11 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             print('JNCC2Wrapper.fit(X=%s, y=%s)' % (X.to_numpy().shape if isinstance(X, pd.DataFrame) else X.shape,
                                                 y.shape if y is not None else 'None'))
         m = hashlib.md5()
-        m.update(str(np.array(X)).encode('utf-8'))
+        if y is None:
+            arr = np.array(X)
+        else:
+            arr = np.hstack((np.array(X), np.array(y).reshape(-1, 1)))
+        m.update(str(arr).encode('utf-8'))
         hash = m.hexdigest()
         if self.arff_root_path_ is None:
             self.__init__(self.dataHandler, self.idx)
