@@ -327,6 +327,62 @@ class DataHandler():
             print(e)
             print('Could not save figure %s' % path)
 
+from sklearn.preprocessing import KBinsDiscretizer
+
+class DatasetHelper():
+
+    def __init__(self):
+        pass
+
+    def discretize(self, data, n_bins, strategy):
+        enc = KBinsDiscretizer(n_bins=n_bins, encode='ordinal', strategy=strategy)
+        pres_arr = np.array(data).reshape(-1, 1)
+        pres_kmeans = enc.fit_transform(pres_arr).astype(int)
+        return pres_kmeans, enc
+
+    def discretize_class(self, samples, prediction_type='classification', prediction_task='presence', bins=None,
+                         strategy=None, verbose=0):
+        """
+        Discretizes presence or co-presence score and put result in a new column (if not already existing).
+
+        Returns: the name of the new column, or None if one of discretized groups only has 2 samples or less, or if discretization
+        failed for any reason.
+        """
+
+        if prediction_type == 'regression':
+            if prediction_task == 'presence':
+                return 'Presence Score'
+            else:
+                return 'Co-presence Score'
+
+        if bins is None or strategy is None:
+            if prediction_task == 'presence':
+                class_column = 'PresenceClass'
+            elif prediction_task == 'copresence':
+                class_column = 'CopresenceClass'
+            else:
+                class_column = ['PresenceClass', 'CopresenceClass']
+            return class_column
+
+        if prediction_task == 'presence':
+            score_column = ['Presence Score']
+            class_column = ['PresenceClass_%d_%s' % (bins, strategy)]
+        elif prediction_task == 'copresence':
+            score_column = ['Co-presence Score']
+            class_column = ['CopresenceClass_%d_%s' % (bins, strategy)]
+        else:
+            score_column = ['Presence Score', 'Co-presence Score']
+            class_column = ['PresenceClass_%d_%s' % (bins, strategy), 'CopresenceClass_%d_%s' % (bins, strategy)]
+
+        for (class_col, score_col) in zip(class_column, score_column):
+
+            if class_col not in samples.columns:
+                samples[class_col], enc = self.discretize(samples[score_col], bins, strategy)
+                samples[class_col] = samples[class_col].astype(int)
+            # TODO: transform test data with discretizer fit on train data
+
+        return class_column if len(class_column)>1 else class_column[0]
+
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 
