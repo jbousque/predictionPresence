@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 import subprocess
 import hashlib
+import time
+import timeit
 
 try:
     from StringIO import StringIO
@@ -488,7 +490,7 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             path = os.path.join(self.arff_root_path_, str(idx))
         else:
             path = self.arff_root_path_
-        cmd = ['java', '-jar', config.JNCC2_JAR, path, train_arff_file, 'cv']
+        cmd = ['java', '-client', '-Xmx4M', '-Xms4M', '-jar', config.JNCC2_JAR, path, train_arff_file, 'cv']
         if self.verbose > 2:
             self.logger_.debug('cv: Executing' + subprocess.list2cmdline(cmd))
             print("cv: Executing " + subprocess.list2cmdline(cmd))
@@ -538,7 +540,7 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
                 path = os.path.dirname(train_arff_file)
         else:
             path = self.arff_root_path_
-        cmd = ['java', '-jar', config.JNCC2_JAR, path, os.path.basename(train_arff_file), os.path.basename(test_arff_file)]
+        cmd = ['java', '-client', '-Xmx4M', '-Xms4M', '-jar', config.JNCC2_JAR, path, os.path.basename(train_arff_file), os.path.basename(test_arff_file)]
         if self.verbose > 2:
             self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
             print("predict: Executing " + subprocess.list2cmdline(cmd))
@@ -570,12 +572,16 @@ class JNCC2Wrapper(BaseEstimator, ClassifierMixin):
             path = os.path.dirname(train_arff_file)
         else:
             path = self.arff_root_path_
-        cmd = ['java', '-jar', config.JNCC2_JAR, path, os.path.basename(train_arff_file),
+        cmd = ['java', '-client', '-Xmx4M', '-Xms4M', '-jar', config.JNCC2_JAR, path, os.path.basename(train_arff_file),
                os.path.basename(test_arff_file), 'unknownclasses']
         if self.verbose > 2:
             self.logger_.debug("predict: Executing " + subprocess.list2cmdline(cmd))
             print("predict: Executing " + subprocess.list2cmdline(cmd))
+        self.t0 = time.time()
         output = subprocess.check_output(cmd)
+        if not hasattr(self, 'total_java_time_'):
+            self.total_java_time_ = 0
+        self.total_java_time_ = self.total_java_time_ + time.time() - self.t0
         if self.verbose > 2:
             self.logger_.info(output)
             print(output)

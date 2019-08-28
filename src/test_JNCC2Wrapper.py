@@ -4,13 +4,13 @@ from feutils import JNCC2Wrapper
 import tempfile
 import numpy as np
 import pandas as pd
-
+import time
 
 class TestJNCC2Wrapper(TestCase):
 
     def test_fit(self):
         dh = DataHandler('__unittests', '__jncc2wrapper', 0)
-        clf = JNCC2Wrapper(dh)
+        clf = JNCC2Wrapper(dh, verbose=10)
 
         print('params ' + str(clf.get_params()))
 
@@ -25,7 +25,7 @@ class TestJNCC2Wrapper(TestCase):
 
     def test_predict(self):
         dh = DataHandler('__unittests', '__jncc2wrapper', 1)
-        clf = JNCC2Wrapper(dh)
+        clf = JNCC2Wrapper(dh, verbose=10)
 
         # generate random binary classification task dataset
         X = np.random.rand(10, 3)
@@ -90,9 +90,32 @@ class TestJNCC2Wrapper(TestCase):
         res = clf.predict(X_test, y_test)
         print(res)
 
+    def test__predict_unknownclasses_performance(selfs):
+        dh = DataHandler('__unittests', '__jncc2wrapper', 4)
+
+        clf = JNCC2Wrapper(dh, verbose=0)
+
+        t0 = time.time()
+        for i in np.arange(50):
+
+            # generate random binary classification task dataset
+            X = np.random.rand(10, 3)
+            y = np.random.randint(2, size=10)
+            #print('y ' + str(y))
+            X = pd.DataFrame(X, columns=['a', 'b', 'c'])
+            clf.fit(X, y)
+
+            X_test = np.random.rand(5, 3)
+            y_test = None
+            X_test = pd.DataFrame(X_test, columns=['a', 'b', 'c'])
+            res = clf.predict(X_test, y_test)
+        t1 = time.time()
+        print('time : %f' % (t1-t0))
+        print('time per it: %f' % ((t1-t0)/50))
+        print('java time: %f' % clf.total_java_time_)
 
     def test__predict_unknownclasses_3classes(self):
-        dh = DataHandler('__unittests', '__jncc2wrapper', 3)
+        dh = DataHandler('__unittests', '__jncc2wrapper', 5)
         clf = JNCC2Wrapper(dh, verbose=10)
 
         # generate random binary classification task dataset
@@ -108,7 +131,7 @@ class TestJNCC2Wrapper(TestCase):
         res = clf.predict(X_test, y_test)
         print(res)
 
-        dh = DataHandler('__unittests', '__jncc2wrapper', 3)
+        dh = DataHandler('__unittests', '__jncc2wrapper', 6)
         clf = JNCC2Wrapper(dh, verbose=10)
 
         # generate random binary classification task dataset

@@ -858,15 +858,14 @@ def copresenceModels(dataFile):
 
 
 def computeFeatures(pathsList, splitratios, isSubject=True):
-    pass
     # Function to call all functions to compute features
-    #computePOStags(pathsList, splitratios, isSubject)
-    #computeSentenceLengths(pathsList, splitratios, isSubject)
-    #computeEntropies(pathsList, splitratios, isSubject)
-    #removeNaN(splitratios, isSubject)
+    computePOStags(pathsList, splitratios, isSubject)
+    computeSentenceLengths(pathsList, splitratios, isSubject)
+    computeEntropies(pathsList, splitratios, isSubject)
+    removeNaN(splitratios, isSubject)
     computeIPUlengths(pathsList, splitratios, isSubject)
-    #computeAnswerDelays(pathsList, splitratios, isSubject)
-    #computeAngularSpeeds(pathsList, splitratios, isSubject)
+    computeAnswerDelays(pathsList, splitratios, isSubject)
+    computeAngularSpeeds(pathsList, splitratios, isSubject)
 
 
 def computeAveragedMatrix(dataFile, outputFile):
